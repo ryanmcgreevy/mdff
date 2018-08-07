@@ -90,24 +90,6 @@ proc ::MDFF::Map::mdff_griddx { args } {
     set threshold $defaultThreshold
   }
 
-  # Get temporary filename
- # set tmpDir [::MDFF::Tmp::tmpdir]
-  #set tmpDX [file join $tmpDir \
-  #  [::MDFF::Tmp::tmpfilename -prefix mdff_griddx -suffix .dx -tmpdir $tmpDir]]
-
-  # TODO: change volutil so that we can do everything in once step
-  #       even when the threshold is not zero; i.e., the option
-  #       -dockgrid should take the threshold as an extra argument
-
-#  if { $threshold != 0 } {
-#    ::VolUtil::volutil -clamp $threshold: -o $tmpDX $inMap
-#    ::VolUtil::volutil -smult -1 -o $tmpDX $tmpDX
-#    ::VolUtil::volutil -range 0:1 -o $outDX $tmpDX
-#    file delete $tmpDX
-#  } else {
-#    ::VolUtil::volutil -dockgrid 1 -o $outDX $inMap
-#  }
-
   set MAPMOL [mol new $inMap]
   voltool clamp -min $threshold -mol $MAPMOL
   voltool smult -amt -1 -mol $MAPMOL
