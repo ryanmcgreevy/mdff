@@ -1883,12 +1883,18 @@ proc MDFFGUI::gui::imd_update {args} {
           $MDFFGUI::gui::IMDCCPlot clear
           $MDFFGUI::gui::IMDCCPlot add $CCx $CCy
           $MDFFGUI::gui::IMDCCPlot replot
-        set CCStep $ts
+          set CCStep $ts
+        
+        if {$MDFFGUI::settings::AutoMDFF} {
+          set outfile [open "cc.out" w]
+          puts $outfile $CCy
+          close $outfile
+        }
       }
     } else {
     }
   }
-
+  
 #real time timeline analysis
 #  set currentframes [molinfo $MDFFGUI::settings::MolID get numframes]
 #  if {$currentframes > $NumFrames} {

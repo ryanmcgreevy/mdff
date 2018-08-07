@@ -41,6 +41,7 @@ namespace eval ::MDFF::Setup:: {
   variable defaultMargin 0
   variable defaultDir [pwd]
   variable defaultLite 0
+  variable defaultAutomdff 0
   variable defaultGridOff 0
 
   variable defaultK 10.0
@@ -173,6 +174,7 @@ proc ::MDFF::Setup::mdff_setup { args } {
   variable defaultConsCol 
   variable defaultFixCol
   variable namdTemplateFile
+  variable autoMDFFTemplateFile
   variable xMDFFTemplateFile
   variable REMDFFTemplateFile
   variable REMDFFLoadFile
@@ -300,6 +302,7 @@ proc ::MDFF::Setup::mdff_setup { args } {
       -dir        { set arg(dir)      [lindex $args [expr $i + 1]] } 
       --lite      { set arg(lite)       1 }
       --gridoff   { set arg(gridoff)    1 }
+      --automdff  { set arg(automdff)    1 }
       #begin REMDFF related options
       --remdff    { set arg(remdff)   1 }
       -replicas   { set arg(replicas) [lindex $args [expr $i + 1]] }
@@ -464,6 +467,12 @@ proc ::MDFF::Setup::mdff_setup { args } {
     set lite $arg(lite)
   } else {
     set lite $defaultLite
+  }
+  
+  if { [info exists arg(automdff)] } {
+    set automdff $arg(automdff)
+  } else {
+    set lite $defaultAutomdff
   }
   
   if { [info exists arg(gridoff)] } {
@@ -679,7 +688,8 @@ proc ::MDFF::Setup::mdff_setup { args } {
         file rename -force "maps.params" [file join $dir "maps$i.params"]
       }
     }
-
+  } elseif {$automdff} {
+    file copy -force $autoMDFFTemplateFile $dir
   } else {
     # Copy NAMD template file to working directory
     file copy -force $namdTemplateFile $dir
@@ -957,6 +967,7 @@ proc ::MDFF::Setup::init_files {} {
   variable defaultParFile
   variable namdTemplateFile
   variable xMDFFTemplateFile
+  variable autoMDFFTemplateFile
   variable xMDFFScriptFile
   variable REMDFFTemplateFile
   variable REMDFFFile
@@ -967,6 +978,7 @@ proc ::MDFF::Setup::init_files {} {
   set defaultParFile [file join $env(CHARMMPARDIR) par_all36_prot.prm]
   set namdTemplateFile [file join $env(MDFFDIR) mdff_template.namd]
   set xMDFFTemplateFile [file join $env(MDFFDIR) xmdff_template.namd]
+  set autoMDFFTemplateFile [file join $env(MDFFDIR) automdff_template.namd]
   set xMDFFScriptFile [file join $env(MDFFDIR) xmdff_phenix.tcl]
   set REMDFFTemplateFile [file join $env(MDFFDIR) remdff_template.namd]
   set REMDFFFile [file join $env(MDFFDIR) replica-mdff.namd]
