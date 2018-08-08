@@ -188,10 +188,13 @@ proc ::MDFF::Map::mdff_delete { args } {
   }
 
   # create a "mask" based on simulated map
-  ::VolUtil::volutil -smult -1 $tmpDX -o $tmpDX2
-  ::VolUtil::volutil -range 0:1 $tmpDX2 -o $tmpDX
-  ::VolUtil::volutil -mult -union $inMap $tmpDX -o $outMap
-
+  set MAPMOL [mol new $tmpDX]
+  set INMAPMOL [mol new $inMap]
+  voltool smult -amt -1 -mol $MAPMOL
+  voltool range -minmax {0 1} -mol $MAPMOL
+  voltool mult -union -mol1 $INMAPMOL -mol2 $MAPMOL -o $outMap 
+  mol delete $MAPMOL
+  mol delete $INMAPMOL
   file delete $tmpDX $tmpDX2
 
 }
