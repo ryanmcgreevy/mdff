@@ -333,11 +333,29 @@ proc ::MDFF::Map::mdff_edge { args } {
   # this function is doing B = A + gauus(A) * (1 - binmask(A))
   # yielding the original information intact, and adding smooth 
   # edges 
-  ::VolUtil::volutil -invmask -o $tmpDX $inMap
-  ::VolUtil::volutil -smooth $defaultSmoothKernel -o $tmpDX2 $inMap
-  ::VolUtil::volutil -mult $tmpDX $tmpDX2 -o $tmpDX3
-  ::VolUtil::volutil -add $inMap $tmpDX3 -o $outDX
+#  ::VolUtil::volutil -invmask -o $tmpDX $inMap
+#  ::VolUtil::volutil -smooth $defaultSmoothKernel -o $tmpDX2 $inMap
+#  ::VolUtil::volutil -mult $tmpDX $tmpDX2 -o $tmpDX3
+#  ::VolUtil::volutil -add $inMap $tmpDX3 -o $outDX
 
+  set MAPMOL [mol new $inMap]
+  
+  voltool binmask -mol $MAPMOL
+  voltool smult -amt -1 -mol $MAPMOL
+  voltool sadd -amt 1 -mol $MAPMOL
+  
+  set MAPMOL2 [mol new $inMap]
+  voltool -smooth -sigma $defaultSmoothKernel -mol $MAPMOL2
+  voltool mult -mol1 $MAPMOL -mol2 $MAPMOL2 -o $tmpDX3
+
+  set MAPMOL3 [mol new $inMap]
+  set MAPMOL4 [mol new $tmpDX3]
+  voltool add -mol1 $MAPMOL3 -mol2 $MAPMOL4 -o $outDX
+     
+  mol delete $MAPMOL
+  mol delete $MAPMOL2
+  mol delete $MAPMOL3
+  mol delete $MAPMOL4
   file delete $tmpDX $tmpDX2 $tmpDX3
 
   return
