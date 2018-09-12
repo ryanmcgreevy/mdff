@@ -72,7 +72,7 @@ proc ::MDFF::Check::mdff_check_usage { } {
   puts "  -spacing <grid spacing in Angstroms> (default based on res, otherwise if using -deprecate: $defaultGridSpacing)"
   puts "  -cccseltext <selection text for calculating the cross correlation (default: $defaultCCsel)"
   puts "  -cccfile  <file to write cross correlation> (default: none)"
-  puts "  -threshold <x sigmas>"
+  puts "  -threshold <x> (ignores voxels with values below x threshold. If using -deprecate, x is sigmas)"
   puts "  -deprecate <use the older, slower correlation algorithm (ccc only)> (on: 1 off: 0, default:$defaultCCDeprecate)"
 
   return
