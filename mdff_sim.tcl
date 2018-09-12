@@ -45,7 +45,7 @@ proc ::MDFF::Sim::mdff_sim_usage { } {
   puts "  -res <target resolution in Angstroms> (default: $defaultTargetResolution)"
   puts "  -spacing <grid spacing in Angstroms> (default based on res, otherwise if using -deprecate: $defaultGridspacing)"
   puts "  -allframes (average over all frames)"
-  puts "  -deprecate <use the older, slower correlation algorithm (ccc only)> (on: 1 off: 0, default:$defaultCCDeprecate)"
+  puts "  -deprecate <use the older, slower correlation algorithm> (on: 1 off: 0, default:$defaultCCDeprecate)"
 
 }
 
