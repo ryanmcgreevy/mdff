@@ -260,16 +260,92 @@ proc ::MDFF::Map::mdff_histogram { args } {
   }
   close $file
   file delete $tmpLog
-
   # calculate x axis
   set xlist [list]
   set delta [expr {($max - $min) / $nbins}]
   for {set i 0} {$i < $nbins} {incr i} {
     lappend xlist [expr {$min + (0.5 * $delta) + $i * $delta}]
   }
+  
+  set highhistval 0.5
+  set highhist 0
+  for {set l 0} {$l < $nbins} {incr l} {
+    if {[lindex $histogram $l] > $highhist} {
+     set highhist [lindex $histogram $l]
+     set highhistval [lindex $xlist $l] 
+    }
+  }
 
-  set plot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel "Number of voxels" -lines -plot]
-
+  set sorted [lsort -integer $histogram]
+  set ymin [lindex $sorted 0]
+  global ymax
+  set ymax [lindex $sorted end]
+ 
+ #normalize?
+ # for {set z 0} {$z < $nbins} {incr z} {
+ #   set oldval [lindex $histogram $z]
+ #   lappend nhistogram [expr ($oldval - $ymin)/($ymax-$ymin)]
+ # }
+  
+  global MAPMOL
+  set MAPMOL [mol new $inMap] 
+  mol modstyle 0 $MAPMOL Isosurface $highhistval 0 0 0 1 1
+  
+  global plot
+  set plot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel "Number of voxels" -nolines -marker square -fill black]
+ 
+  for {set j 0} {$j < $nbins} {incr j} {
+    set left [expr [lindex $xlist $j] - (0.5 * $delta)]
+    set right [expr [lindex $xlist $j] + (0.5 * $delta)]
+    $plot draw rectangle $left 0 $right [lindex $histogram $j] -fill "#0000ff" -tags rect$j
+   
+    #$plot add [lindex $xlist $j] [lindex $histogram $j] -marker square -fillcolor black -radius [expr 0.5*$delta] -callback histclick
+  }
+ # puts [[$plot getpath].f.cf find withtag "rect0"]
+  $plot replot
+  global bpress
+  set bpress 0
+    
+  global xmaxg
+  global xplotming
+  global xplotmaxg
+  global scalexg
+  global xming
+  variable [$plot namespace]::xplotmin
+  variable [$plot namespace]::xplotmax
+  variable [$plot namespace]::scalex
+  variable [$plot namespace]::xmin
+  variable [$plot namespace]::xmax
+  set xplotming $xplotmin
+  set xplotmaxg $xplotmax
+  set scalexg $scalex
+  set xming $xmin
+  set xmaxg $xmax
+  
+  bind [$plot getpath].f.cf <ButtonPress> {
+    set bpress 1    
+    variable [$plot namespace]::xplotmin
+    set x [expr (%x - $xplotming)/$scalexg + $xming]
+    if {$x >= $xming && $x <= $xmaxg} { 
+      $plot undraw "line"
+      $plot draw line $x 0 $x $ymax -tag "line"
+      mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
+    }
+  }
+  
+  bind [$plot getpath].f.cf <ButtonRelease> {
+    set bpress 0 
+  }
+  
+  bind [$plot getpath].f.cf <Motion> {
+    if {$bpress && $x >= $xming && $x <= $xmaxg} {
+      variable [$plot namespace]::xplotmin
+      set x [expr (%x - $xplotming)/$scalexg + $xming]
+      $plot undraw "line"
+      $plot draw line $x 0 $x $ymax -tag "line"
+      mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
+    }
+  }
 }
 
 
