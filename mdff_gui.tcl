@@ -152,6 +152,7 @@ namespace eval MDFFGUI:: {
 
     #MapTools Settings. Maybe move this into an entirely separate namespace?
     variable MapToolsMolID ""  
+    variable MapToolsPlotX ""  
 
 
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
@@ -945,7 +946,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set CurrentMapToolsMolMenu [menu $w.hlf.n.f5.main.fileframe.molmenubutton.molmenu -tearoff no]
   
   #set_mol_text 
-  fill_mol_menu $CurrentMapToolsMolMenu
+  fill_mapmol_menu $CurrentMapToolsMolMenu
   trace add variable ::vmd_molecule write "MDFFGUI::gui::fill_mapmol_menu $CurrentMapToolsMolMenu"
   trace add variable MDFFGUI::settings::MapToolsMolID write MDFFGUI::gui::set_mapmol_text
   set MDFFGUI::settings::MapToolsMolID $nullMolString
@@ -953,10 +954,18 @@ proc MDFFGUI::gui::mdffgui {} {
   set HistPlotFrame [ttk::frame $w.hlf.n.f5.main.plot]
   grid columnconfigure $HistPlotFrame 0 -weight 1  
   set GenerateHistPlot [ttk::button $w.hlf.n.f5.main.plot.histbutton -text "Generate Histogram" -command {MDFFGUI::gui::generate_histogram} -state enabled]
-  global HistPlot
-  set HistPlot [multiplot embed $w.hlf.n.f5.main.plot -xsize 600 -ysize 400 -title "Density Histogram" -xlabel "Density" -ylabel "Number of Voxels" -nolines -marker square -autoscale -fill black ]
-  set histplot [$HistPlot getpath]
+ #below is for embedded multiplot, which seems to cause issues with undrawing all the rectangles/lines
+ #so sticking with making fresh plots every click in its own window for now...
+ # global HistPlot
+  #set HistPlot [multiplot embed $w.hlf.n.f5.main.plot -xsize 600 -ysize 400 -title "Density Histogram" -xlabel "Density" -ylabel "Number of Voxels" -nolines -autoscale ]
+  #set histplot [$HistPlot getpath]
+
+  global MapToolsPlotX
+  set MapToolsPlotX 0
+  set MapToolsPlotXLabel [ttk::label $w.hlf.n.f5.main.plot.plotxlabel -text "Selected Voxel Value: " ]
+  set MapToolsPlotXLabelX [ttk::label $w.hlf.n.f5.main.plot.plotxlabelx -textvar MapToolsPlotX]
   
+  set HistPlotBinaryFrame [ttk::frame $w.hlf.n.f5.main.binaryframe]
   
   grid $MapToolsFrame -row 0 -column 0 -sticky nsew
  
@@ -964,12 +973,15 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsMol -row 0 -column 0 -sticky nsew
   grid $MapToolsMolMenuButton   -row 0 -column 1 -sticky nsew
   
-  grid $HistPlotFrame -row 1 -column 0 -sticky nsew
+  grid $HistPlotFrame -row 1 -column 0 -sticky nsw
   grid $GenerateHistPlot -row 0 -column 0 -sticky nsew
-  grid $histplot -row 1 -column 0 -sticky nsew
+  grid $MapToolsPlotXLabel -row 1 -column 0 -sticky nsew
+  grid $MapToolsPlotXLabelX -row 1 -column 1 -sticky nsew
+ # grid $histplot -row 1 -column 0 -sticky nsew
+
+  grid $HistPlotBinaryFrame -row 2 -column 0 -sticky nswe
 
 
-  $HistPlot replot
   #Basic MDFF analysis
   #set NBTab6 [ttk::frame $w.hlf.n.f6];
   #$Notebook add $NBTab6 -text "Analysis" 
@@ -2250,7 +2262,7 @@ proc MDFFGUI::gui::generate_histogram {} {
   global HistPlot 
   #make this an option
   set nbins 30
-
+  if {[info exists HistPlot]} {$HistPlot quit}
   # Get temporary filename
   set tmpDir [::MDFF::Tmp::tmpdir]
   set tmpLog [file join $tmpDir \
@@ -2302,14 +2314,13 @@ proc MDFFGUI::gui::generate_histogram {} {
   set MAPMOL $MDFFGUI::settings::MapToolsMolID 
   mol modstyle 0 $MAPMOL Isosurface $highhistval 0 0 0 1 1
   
-  #global plot
-  #set plot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel "Number of voxels" -nolines -marker square -fill black]
+  set HistPlot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel "Number of voxels" -nolines -marker square -fill black]
  
   for {set j 0} {$j < $nbins} {incr j} {
     set left [expr [lindex $xlist $j] - (0.5 * $delta)]
     set right [expr [lindex $xlist $j] + (0.5 * $delta)]
     $HistPlot draw rectangle $left 0 $right [lindex $histogram $j] -fill "#0000ff" -tags rect$j
-    $HistPlot add [lindex $xlist $j] [lindex $histogram $j] -marker square -fillcolor black
+  #  $HistPlot add [lindex $xlist $j] [lindex $histogram $j] -marker square -fillcolor black
   
   }
 
@@ -2323,6 +2334,7 @@ proc MDFFGUI::gui::generate_histogram {} {
   global xplotmaxg
   global scalexg
   global xming
+  global MapToolsPlotX
   variable [$HistPlot namespace]::xplotmin
   variable [$HistPlot namespace]::xplotmax
   variable [$HistPlot namespace]::scalex
@@ -2336,9 +2348,10 @@ proc MDFFGUI::gui::generate_histogram {} {
   
   bind [$HistPlot getpath].f.cf <ButtonPress> {
     set bpress 1    
-    variable [$HistPlot namespace]::xplotmin
+    #variable [$HistPlot namespace]::xplotmin
     set x [expr (%x - $xplotming)/$scalexg + $xming]
-    if {$x >= $xming && $x <= $xmaxg} { 
+    if {$x >= $xming && $x <= $xmaxg} {
+      set MapToolsPlotX $x
       $HistPlot undraw "line"
       $HistPlot draw line $x 0 $x $ymax -tag "line"
       mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
@@ -2350,9 +2363,10 @@ proc MDFFGUI::gui::generate_histogram {} {
   }
   
   bind [$HistPlot getpath].f.cf <Motion> {
+    #variable [$HistPlot namespace]::xplotmin
+    set x [expr (%x - $xplotming)/$scalexg + $xming]
     if {$bpress && $x >= $xming && $x <= $xmaxg} {
-      variable [$HistPlot namespace]::xplotmin
-      set x [expr (%x - $xplotming)/$scalexg + $xming]
+      set MapToolsPlotX $x
       $HistPlot undraw "line"
       $HistPlot draw line $x 0 $x $ymax -tag "line"
       mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
