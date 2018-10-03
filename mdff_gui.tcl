@@ -83,6 +83,7 @@ namespace eval MDFFGUI:: {
     variable ShowBTNPadX
 
     variable MapToolsMolMenuText
+    #variable HistPlot
   }
   namespace eval settings:: {
     namespace export settings
@@ -241,6 +242,8 @@ proc MDFFGUI::gui::mdffgui {} {
   variable HLF
   variable ShowBTNPadX
   
+
+  #variable HistPlot
 #  # If already initialized, just deiconify and return
   if { [winfo exists .mdffgui] } {
     wm deiconify $w
@@ -936,6 +939,7 @@ proc MDFFGUI::gui::mdffgui {} {
   grid columnconfigure $MapToolsFrame 0 -weight 1
   
   set MapToolsFileFrame [ttk::frame $w.hlf.n.f5.main.fileframe]
+ #Following is for using already loaded volumes
   set MapToolsMol [ttk::label $w.hlf.n.f5.main.fileframe.mollabel -text "Mol ID (Density Map):"]
   set MapToolsMolMenuButton [ttk::menubutton $w.hlf.n.f5.main.fileframe.molmenubutton -textvar MDFFGUI::gui::MapToolsMolMenuText -menu $w.hlf.n.f5.main.fileframe.molmenubutton.molmenu]
   set CurrentMapToolsMolMenu [menu $w.hlf.n.f5.main.fileframe.molmenubutton.molmenu -tearoff no]
@@ -948,6 +952,8 @@ proc MDFFGUI::gui::mdffgui {} {
   
   set HistPlotFrame [ttk::frame $w.hlf.n.f5.main.plot]
   grid columnconfigure $HistPlotFrame 0 -weight 1  
+  set GenerateHistPlot [ttk::button $w.hlf.n.f5.main.plot.histbutton -text "Generate Histogram" -command {MDFFGUI::gui::generate_histogram} -state enabled]
+  global HistPlot
   set HistPlot [multiplot embed $w.hlf.n.f5.main.plot -xsize 600 -ysize 400 -title "Density Histogram" -xlabel "Density" -ylabel "Number of Voxels" -nolines -marker square -autoscale -fill black ]
   set histplot [$HistPlot getpath]
   
@@ -959,6 +965,7 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsMolMenuButton   -row 0 -column 1 -sticky nsew
   
   grid $HistPlotFrame -row 1 -column 0 -sticky nsew
+  grid $GenerateHistPlot -row 0 -column 0 -sticky nsew
   grid $histplot -row 1 -column 0 -sticky nsew
 
 
@@ -2236,6 +2243,120 @@ proc MDFFGUI::gui::fill_mapmol_menu {args} {
     if {[lsearch -exact $molList [molinfo top]] != -1} {
       set MDFFGUI::settings::MapToolsMolID [molinfo top]
     } else { set MDFFGUI::settings::MapToolsMolID $nullMolString }
+  }
+}
+
+proc MDFFGUI::gui::generate_histogram {} {
+  global HistPlot 
+  #make this an option
+  set nbins 30
+
+  # Get temporary filename
+  set tmpDir [::MDFF::Tmp::tmpdir]
+  set tmpLog [file join $tmpDir \
+    [::MDFF::Tmp::tmpfilename -prefix mdff_hist -suffix .log -tmpdir $tmpDir]]
+  set inMap [molinfo $MDFFGUI::settings::MapToolsMolID get filename]
+    
+  ::VolUtil::volutil -tee $tmpLog -quiet -hist -histnbins $nbins $inMap
+
+  # parse the output and plot the histogram...
+  set file [open $tmpLog r]
+  gets $file line
+  while {$line != ""} {
+    if { [regexp {^Density histogram with min = (.*), max = (.*), nbins = (\d+)} $line fullmatch min max nbins] } {
+      gets $file histogram
+      break
+    }
+    gets $file line
+  }
+  close $file
+  file delete $tmpLog
+  # calculate x axis
+  set xlist [list]
+  set delta [expr {($max - $min) / $nbins}]
+  for {set i 0} {$i < $nbins} {incr i} {
+    lappend xlist [expr {$min + (0.5 * $delta) + $i * $delta}]
+  }
+  
+  set highhistval 0.5
+  set highhist 0
+  for {set l 0} {$l < $nbins} {incr l} {
+    if {[lindex $histogram $l] > $highhist} {
+     set highhist [lindex $histogram $l]
+     set highhistval [lindex $xlist $l] 
+    }
+  }
+
+  set sorted [lsort -integer $histogram]
+  set ymin [lindex $sorted 0]
+  global ymax
+  set ymax [lindex $sorted end]
+ 
+ #normalize?
+ # for {set z 0} {$z < $nbins} {incr z} {
+ #   set oldval [lindex $histogram $z]
+ #   lappend nhistogram [expr ($oldval - $ymin)/($ymax-$ymin)]
+ # }
+  
+  global MAPMOL
+  set MAPMOL $MDFFGUI::settings::MapToolsMolID 
+  mol modstyle 0 $MAPMOL Isosurface $highhistval 0 0 0 1 1
+  
+  #global plot
+  #set plot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel "Number of voxels" -nolines -marker square -fill black]
+ 
+  for {set j 0} {$j < $nbins} {incr j} {
+    set left [expr [lindex $xlist $j] - (0.5 * $delta)]
+    set right [expr [lindex $xlist $j] + (0.5 * $delta)]
+    $HistPlot draw rectangle $left 0 $right [lindex $histogram $j] -fill "#0000ff" -tags rect$j
+    $HistPlot add [lindex $xlist $j] [lindex $histogram $j] -marker square -fillcolor black
+  
+  }
+
+  $HistPlot replot
+  
+  global bpress
+  set bpress 0
+    
+  global xmaxg
+  global xplotming
+  global xplotmaxg
+  global scalexg
+  global xming
+  variable [$HistPlot namespace]::xplotmin
+  variable [$HistPlot namespace]::xplotmax
+  variable [$HistPlot namespace]::scalex
+  variable [$HistPlot namespace]::xmin
+  variable [$HistPlot namespace]::xmax
+  set xplotming $xplotmin
+  set xplotmaxg $xplotmax
+  set scalexg $scalex
+  set xming $xmin
+  set xmaxg $xmax
+  
+  bind [$HistPlot getpath].f.cf <ButtonPress> {
+    set bpress 1    
+    variable [$HistPlot namespace]::xplotmin
+    set x [expr (%x - $xplotming)/$scalexg + $xming]
+    if {$x >= $xming && $x <= $xmaxg} { 
+      $HistPlot undraw "line"
+      $HistPlot draw line $x 0 $x $ymax -tag "line"
+      mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
+    }
+  }
+  
+  bind [$HistPlot getpath].f.cf <ButtonRelease> {
+    set bpress 0 
+  }
+  
+  bind [$HistPlot getpath].f.cf <Motion> {
+    if {$bpress && $x >= $xming && $x <= $xmaxg} {
+      variable [$HistPlot namespace]::xplotmin
+      set x [expr (%x - $xplotming)/$scalexg + $xming]
+      $HistPlot undraw "line"
+      $HistPlot draw line $x 0 $x $ymax -tag "line"
+      mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
+    }
   }
 }
 
