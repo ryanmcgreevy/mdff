@@ -2283,6 +2283,25 @@ proc MDFFGUI::gui::generate_histogram {} {
   }
   close $file
   file delete $tmpLog
+  
+  #Make histogram values on log scale to reduce drastic difference between highest and lowest bins.
+  #TODO: make this an option.
+  set log 0
+  if {$log} {
+    for {set i 0} {$i < $nbins} {incr i} {
+      lset histogram $i [expr log10([lindex $histogram $i])]
+    }
+    set sorted [lsort $histogram]   
+    set ylabel "Number of voxels (log10)"   
+  } else {
+    set sorted [lsort -integer $histogram]
+    set ylabel "Number of voxels"
+  }
+  global ymin
+  set ymin [lindex $sorted 0]
+  global ymax
+  set ymax [lindex $sorted end]
+
   # calculate x axis
   set xlist [list]
   set delta [expr {($max - $min) / $nbins}]
@@ -2299,11 +2318,7 @@ proc MDFFGUI::gui::generate_histogram {} {
     }
   }
 
-  set sorted [lsort -integer $histogram]
-  set ymin [lindex $sorted 0]
-  global ymax
-  set ymax [lindex $sorted end]
- 
+   
  #normalize?
  # for {set z 0} {$z < $nbins} {incr z} {
  #   set oldval [lindex $histogram $z]
@@ -2314,12 +2329,12 @@ proc MDFFGUI::gui::generate_histogram {} {
   set MAPMOL $MDFFGUI::settings::MapToolsMolID 
   mol modstyle 0 $MAPMOL Isosurface $highhistval 0 0 0 1 1
   
-  set HistPlot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel "Number of voxels" -nolines -marker square -fill black]
+  set HistPlot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel $ylabel -nolines -marker square -fill black]
  
   for {set j 0} {$j < $nbins} {incr j} {
     set left [expr [lindex $xlist $j] - (0.5 * $delta)]
     set right [expr [lindex $xlist $j] + (0.5 * $delta)]
-    $HistPlot draw rectangle $left 0 $right [lindex $histogram $j] -fill "#0000ff" -tags rect$j
+    $HistPlot draw rectangle $left $ymin $right [lindex $histogram $j] -fill "#0000ff" -tags rect$j
   #  $HistPlot add [lindex $xlist $j] [lindex $histogram $j] -marker square -fillcolor black
   
   }
@@ -2340,6 +2355,7 @@ proc MDFFGUI::gui::generate_histogram {} {
   variable [$HistPlot namespace]::scalex
   variable [$HistPlot namespace]::xmin
   variable [$HistPlot namespace]::xmax
+  #variable [$HistPlot namespace]::ymin
   set xplotming $xplotmin
   set xplotmaxg $xplotmax
   set scalexg $scalex
@@ -2353,7 +2369,7 @@ proc MDFFGUI::gui::generate_histogram {} {
     if {$x >= $xming && $x <= $xmaxg} {
       set MapToolsPlotX $x
       $HistPlot undraw "line"
-      $HistPlot draw line $x 0 $x $ymax -tag "line"
+      $HistPlot draw line $x $ymin $x $ymax -tag "line"
       mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
     }
   }
@@ -2368,7 +2384,7 @@ proc MDFFGUI::gui::generate_histogram {} {
     if {$bpress && $x >= $xming && $x <= $xmaxg} {
       set MapToolsPlotX $x
       $HistPlot undraw "line"
-      $HistPlot draw line $x 0 $x $ymax -tag "line"
+      $HistPlot draw line $x $ymin $x $ymax -tag "line"
       mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
     }
   }
