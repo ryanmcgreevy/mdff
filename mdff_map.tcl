@@ -91,9 +91,13 @@ proc ::MDFF::Map::mdff_griddx { args } {
   }
 
   set MAPMOL [mol new $inMap]
-  voltool clamp -min $threshold -mol $MAPMOL
-  voltool smult -amt -1 -mol $MAPMOL
-  voltool range -minmax {0 1} -mol $MAPMOL -o $outDX
+#stepwise using voltool
+#  voltool clamp -min $threshold -mol $MAPMOL
+#  voltool smult -amt -1 -mol $MAPMOL
+#  voltool range -minmax {0 1} -mol $MAPMOL -o $outDX
+
+  #all steps (clamp to threshold, scaleby -1, rescale datarange to 0-1) combined   
+  voltool pot -threshold $threshold -mol $MAPMOL -o $outDX
   mol delete $MAPMOL
   return
 
