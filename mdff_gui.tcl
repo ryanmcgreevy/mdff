@@ -2286,7 +2286,7 @@ proc MDFFGUI::gui::generate_histogram {} {
   
   #Make histogram values on log scale to reduce drastic difference between highest and lowest bins.
   #TODO: make this an option.
-  set log 0
+  set log 1
   if {$log} {
     for {set i 0} {$i < $nbins} {incr i} {
       lset histogram $i [expr log10([lindex $histogram $i])]
@@ -2318,13 +2318,6 @@ proc MDFFGUI::gui::generate_histogram {} {
     }
   }
 
-   
- #normalize?
- # for {set z 0} {$z < $nbins} {incr z} {
- #   set oldval [lindex $histogram $z]
- #   lappend nhistogram [expr ($oldval - $ymin)/($ymax-$ymin)]
- # }
-  
   global MAPMOL
   set MAPMOL $MDFFGUI::settings::MapToolsMolID 
   mol modstyle 0 $MAPMOL Isosurface $highhistval 0 0 0 1 1
