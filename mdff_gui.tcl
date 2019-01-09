@@ -2282,7 +2282,7 @@ proc MDFFGUI::gui::generate_histogram {} {
     gets $file line
   }
   close $file
-  file delete $tmpLog
+#  file delete $tmpLog
   
   #Make histogram values on log scale to reduce drastic difference between highest and lowest bins.
   #TODO: make this an option.
