@@ -2263,26 +2263,21 @@ proc MDFFGUI::gui::generate_histogram {} {
   #make this an option
   set nbins 30
   if {[info exists HistPlot]} {$HistPlot quit}
-  # Get temporary filename
-  set tmpDir [::MDFF::Tmp::tmpdir]
-  set tmpLog [file join $tmpDir \
-    [::MDFF::Tmp::tmpfilename -prefix mdff_hist -suffix .log -tmpdir $tmpDir]]
-  set inMap [molinfo $MDFFGUI::settings::MapToolsMolID get filename]
+  
+  global MAPMOL
+  set MAPMOL $MDFFGUI::settings::MapToolsMolID 
     
-  ::VolUtil::volutil -tee $tmpLog -quiet -hist -histnbins $nbins $inMap
-
-  # parse the output and plot the histogram...
-  set file [open $tmpLog r]
-  gets $file line
-  while {$line != ""} {
-    if { [regexp {^Density histogram with min = (.*), max = (.*), nbins = (\d+)} $line fullmatch min max nbins] } {
-      gets $file histogram
-      break
-    }
-    gets $file line
+  set histreturn [voltool hist -nbins $nbins -mol $MAPMOL]
+  set minmax [voltool info minmax -mol $MAPMOL]
+  set min [lindex $minmax 0]
+  set max [lindex $minmax 1]
+  set xlist [list]
+  set delta [expr {($max - $min) / $nbins}]
+ 
+  foreach {midpt hist} $histreturn {
+    lappend xlist $midpt
+    lappend histogram $hist
   }
-  close $file
-#  file delete $tmpLog
   
   #Make histogram values on log scale to reduce drastic difference between highest and lowest bins.
   #TODO: make this an option.
@@ -2302,13 +2297,6 @@ proc MDFFGUI::gui::generate_histogram {} {
   global ymax
   set ymax [lindex $sorted end]
 
-  # calculate x axis
-  set xlist [list]
-  set delta [expr {($max - $min) / $nbins}]
-  for {set i 0} {$i < $nbins} {incr i} {
-    lappend xlist [expr {$min + (0.5 * $delta) + $i * $delta}]
-  }
-  
   set highhistval 0.5
   set highhist 0
   for {set l 0} {$l < $nbins} {incr l} {
@@ -2318,11 +2306,9 @@ proc MDFFGUI::gui::generate_histogram {} {
     }
   }
 
-  global MAPMOL
-  set MAPMOL $MDFFGUI::settings::MapToolsMolID 
   mol modstyle 0 $MAPMOL Isosurface $highhistval 0 0 0 1 1
   
-  set HistPlot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel $ylabel -nolines -marker square -fill black]
+  set HistPlot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel $ylabel -nolines -marker square -fill black -xmin [expr [lindex $xlist 0] - (0.5*$delta)] -xmax [expr [lindex $xlist end] + (0.5*$delta)]]
  
   for {set j 0} {$j < $nbins} {incr j} {
     set left [expr [lindex $xlist $j] - (0.5 * $delta)]
