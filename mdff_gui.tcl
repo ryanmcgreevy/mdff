@@ -1626,7 +1626,7 @@ proc MDFFGUI::gui::mdff_setup {} {
         for {set i 0} {$i < $MDFFGUI::settings::REMDFFNumReplicas} {incr i} {
           set replicadxfile [file join $MDFFGUI::settings::CurrentDir "$i.dx"]
           file delete -force $replicadxfile
-          volutil -smooth $i $file -o $replicadxfile
+          voltool smooth -sigma $i -i $file -o $replicadxfile
           #don't use make_griddx since we aren't following the usual naming convention in the case of replicas
           mdff griddx -i $replicadxfile -o $replicadxfile
           lappend potentials "$i.dx"

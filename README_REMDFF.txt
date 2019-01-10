@@ -26,7 +26,7 @@ NOTE: Unless you used the MDFF GUI to generate these simulation files
 and selected "Automatically Generate Replica Potentials", then you will have to
 create your own smoothed potentials using the following VMD command:
 
-volutil -smooth $sigma $densityfile -o $smootheddxfile.dx
+voltool smooth -sigma $sigma -i $densityfile -o $smootheddxfile.dx
 
 where $sigma is the gaussian blur width, $densityfile is your target density, and
 $smootheddxfile.dx is the name of the output file (make sure to include .dx as the file
