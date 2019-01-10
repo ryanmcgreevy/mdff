@@ -25,11 +25,6 @@
 # mdff hist -- calculates a density histogram
 # 
 
-# TODO
-# - 'mdff delete' should use the input map gridspacing by default, but
-#    that information has to be provided by volutil first
-
-package require volutil
 package require multiplot
 package require mdff_tmp
 package provide mdff_map 0.2
@@ -203,7 +198,7 @@ proc ::MDFF::Map::mdff_histogram_usage { } {
 
   variable defaultNBins
 
-  puts "Usage: mdff histogram -i <input map> ?options?"
+  puts "Usage: mdff hist -i <input map> ?options?"
   puts "Options:"
   puts "  -nbins <number of bins> (default: $defaultNBins)"
 
@@ -241,32 +236,21 @@ proc ::MDFF::Map::mdff_histogram { args } {
     set nbins $defaultNBins
   }
 
-  # Get temporary filename
-  set tmpDir [::MDFF::Tmp::tmpdir]
-  set tmpLog [file join $tmpDir \
-    [::MDFF::Tmp::tmpfilename -prefix mdff_hist -suffix .log -tmpdir $tmpDir]]
-
-  ::VolUtil::volutil -tee $tmpLog -quiet -hist -histnbins $nbins $inMap
-
-  # parse the output and plot the histogram...
-  set file [open $tmpLog r]
-  gets $file line
-  while {$line != ""} {
-    if { [regexp {^Density histogram with min = (.*), max = (.*), nbins = (\d+)} $line fullmatch min max nbins] } {
-      gets $file histogram
-      break
-    }
-    gets $file line
-  }
-  close $file
-  file delete $tmpLog
-  # calculate x axis
+  global MAPMOL
+  set MAPMOL [mol new $inMap] 
+  
+  set histreturn [voltool hist -nbins $nbins -mol $MAPMOL]
+  set minmax [voltool info minmax -mol $MAPMOL]
+  set min [lindex $minmax 0]
+  set max [lindex $minmax 1]
   set xlist [list]
   set delta [expr {($max - $min) / $nbins}]
-  for {set i 0} {$i < $nbins} {incr i} {
-    lappend xlist [expr {$min + (0.5 * $delta) + $i * $delta}]
+ 
+  foreach {midpt hist} $histreturn {
+    lappend xlist $midpt
+    lappend histogram $hist
   }
-  
+
   set highhistval 0.5
   set highhist 0
   for {set l 0} {$l < $nbins} {incr l} {
@@ -275,25 +259,24 @@ proc ::MDFF::Map::mdff_histogram { args } {
      set highhistval [lindex $xlist $l] 
     }
   }
-
+      
   set sorted [lsort -integer $histogram]
   set ymin [lindex $sorted 0]
   global ymax
   set ymax [lindex $sorted end]
- 
+
+   
  #normalize?
  # for {set z 0} {$z < $nbins} {incr z} {
  #   set oldval [lindex $histogram $z]
  #   lappend nhistogram [expr ($oldval - $ymin)/($ymax-$ymin)]
  # }
   
-  global MAPMOL
-  set MAPMOL [mol new $inMap] 
   mol modstyle 0 $MAPMOL Isosurface $highhistval 0 0 0 1 1
   
   global plot
-  set plot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel "Number of voxels" -nolines -marker square -fill black]
- 
+  set plot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel "Number of voxels" -nolines -marker square -fill black -xmin [expr [lindex $xlist 0] - (0.5*$delta)] -xmax [expr [lindex $xlist end] + (0.5*$delta)] ]
+  
   for {set j 0} {$j < $nbins} {incr j} {
     set left [expr [lindex $xlist $j] - (0.5 * $delta)]
     set right [expr [lindex $xlist $j] + (0.5 * $delta)]
@@ -403,16 +386,6 @@ proc ::MDFF::Map::mdff_edge { args } {
     [::MDFF::Tmp::tmpfilename -prefix mdff_edge -suffix .dx -tmpdir $tmpDir]]
   set tmpDX3 [file join $tmpDir \
     [::MDFF::Tmp::tmpfilename -prefix mdff_edge -suffix .dx -tmpdir $tmpDir]]
-
-  # TODO: change volutil so that we can do everything in one step
-
-  # this function is doing B = A + gauus(A) * (1 - binmask(A))
-  # yielding the original information intact, and adding smooth 
-  # edges 
-#  ::VolUtil::volutil -invmask -o $tmpDX $inMap
-#  ::VolUtil::volutil -smooth $defaultSmoothKernel -o $tmpDX2 $inMap
-#  ::VolUtil::volutil -mult $tmpDX $tmpDX2 -o $tmpDX3
-#  ::VolUtil::volutil -add $inMap $tmpDX3 -o $outDX
 
   set MAPMOL [mol new $inMap]
   
