@@ -942,11 +942,14 @@ proc MDFFGUI::gui::mdffgui {} {
   $Notebook add $NBTab5 -text "Map Tools" 
   grid columnconfigure $NBTab5 0 -weight 1
   grid rowconfigure $NBTab5 0 -weight 1
+  
   set MapToolsFrame [ttk::frame $w.hlf.n.f5.main]
   grid columnconfigure $MapToolsFrame 1 -weight 1
   
+  grid $MapToolsFrame -row 0 -column 0 -sticky nsew
+  
   set MapToolsFileFrame [ttk::frame $w.hlf.n.f5.main.fileframe]
-  #grid columnconfigure $MapToolsFileFrame 1 -weight 1
+  grid columnconfigure $MapToolsFileFrame 1 -weight 1 
  #Following is for using already loaded volumes
   set MapToolsMol [ttk::label $w.hlf.n.f5.main.fileframe.mollabel -text "Mol ID (Density Map):"]
   set MapToolsMolMenuButton [ttk::menubutton $w.hlf.n.f5.main.fileframe.molmenubutton -textvar MDFFGUI::gui::MapToolsMolMenuText -menu $w.hlf.n.f5.main.fileframe.molmenubutton.molmenu]
@@ -960,9 +963,14 @@ proc MDFFGUI::gui::mdffgui {} {
   
   set MapToolsSelectMap [ttk::button $w.hlf.n.f5.main.fileframe.mapbutton -text "Browse" -command {MDFFGUI::gui::get_map} ]
  
+ 
+  grid $MapToolsFileFrame -row 0 -column 0 -sticky nsew
+  grid $MapToolsMol -row 0 -column 0 -sticky nsw
+  grid $MapToolsMolMenuButton   -row 0 -column 1 -sticky nsw
+  grid $MapToolsSelectMap   -row 0 -column 2 -sticky nsw
   
-  set MapToolsInfoFrame [ttk::labelframe $w.hlf.n.f5.main.infoframe -labelanchor nw -text "Map Info"]
-#  grid columnconfigure $MapToolsInfoFrame 1 -weight 1
+  set MapToolsInfoFrame [ttk::labelframe $w.hlf.n.f5.main.infoframe -labelanchor nw]
+  grid columnconfigure $MapToolsInfoFrame 1 -weight 1
   set MapToolsMapOriginLabel [ttk::label $w.hlf.n.f5.main.infoframe.originlabel -text "Origin: "]
   set MapToolsMapOriginLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.originlabeldisp -textvar MDFFGUI::settings::MapToolsOrigin]
   set MapToolsMapXsizeLabel [ttk::label $w.hlf.n.f5.main.infoframe.xsizelabel -text "X Size: "]
@@ -977,9 +985,40 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsMapMaxLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.maxlabeldisp -textvar MDFFGUI::settings::MapToolsMax]
   
   trace add variable MDFFGUI::settings::MapToolsMolID write MDFFGUI::gui::set_map_stats
+  set ShowMapToolsInfo [ttk::label $w.hlf.n.f5.main.showinfo -text "$rightPoint Map Info..." -anchor w]
+  set HideMapToolsInfo [ttk::label $w.hlf.n.f5.main.infoframe.hideinfo -text "$downPoint Map Info" -anchor w]
+
+  $MapToolsInfoFrame configure -labelwidget $HideMapToolsInfo
+  bind $HideMapToolsInfo <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.infoframe
+      grid .mdffgui.hlf.n.f5.main.showinfo
+      MDFFGUI::gui::resizeToActiveTab
+  }
+  bind $ShowMapToolsInfo <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.showinfo
+      grid .mdffgui.hlf.n.f5.main.infoframe -row 1 -column 0 -sticky nsew -pady 5
+      grid columnconfigure .mdffgui.hlf.n.f5.main.infoframe 1 -weight 1
+      MDFFGUI::gui::resizeToActiveTab
+  }
   
-  set HistPlotFrame [ttk::labelframe $w.hlf.n.f5.main.plot -labelanchor nw -text "Histogram"]
-  #grid columnconfigure $HistPlotFrame 1 -weight 1  
+  
+  grid $ShowMapToolsInfo -row 1 -column 0 -sticky nswe -pady 5 -padx $ShowBTNPadX
+  #grid $MapToolsInfoFrame -row 1 -column 0 -sticky nsew
+  grid $MapToolsMapOriginLabel -row 0 -column 0 -sticky nsw 
+  grid $MapToolsMapOriginLabelDisp -row 0 -column 1 -sticky nsw
+  grid $MapToolsMapXsizeLabel -row 1 -column 0 -sticky nsw 
+  grid $MapToolsMapXsizeLabelDisp -row 1 -column 1 -sticky nsw
+  grid $MapToolsMapYsizeLabel -row 1 -column 2 -sticky nsw 
+  grid $MapToolsMapYsizeLabelDisp -row 1 -column 3 -sticky nsw
+  grid $MapToolsMapZsizeLabel -row 1 -column 4 -sticky nsw 
+  grid $MapToolsMapZsizeLabelDisp -row 1 -column 5 -sticky nsw
+  grid $MapToolsMapMinLabel -row 2 -column 0 -sticky nsw
+  grid $MapToolsMapMinLabelDisp -row 2 -column 1 -sticky nsw
+  grid $MapToolsMapMaxLabel -row 2 -column 2 -sticky nsw
+  grid $MapToolsMapMaxLabelDisp -row 2 -column 3 -sticky nsw
+  
+  set HistPlotFrame [ttk::labelframe $w.hlf.n.f5.main.plot -labelanchor nw]
+  grid columnconfigure $HistPlotFrame 1 -weight 1  
   set GenerateHistPlot [ttk::button $w.hlf.n.f5.main.plot.histbutton -text "Generate Histogram" -command {MDFFGUI::gui::generate_histogram} -state enabled]
   set HistPlotBinLabel [ttk::label $w.hlf.n.f5.main.plot.histbinlabel -text "Number of Bins:"]
   set HistPlotBinEntry [ttk::entry $w.hlf.n.f5.main.plot.histbinentry -textvariable MDFFGUI::settings::HistPlotBins -width 5]
@@ -991,30 +1030,24 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsPlotXLabel [ttk::label $w.hlf.n.f5.main.plot.plotxlabel -text "Selected Voxel Value: "]
   set MapToolsPlotXLabelX [ttk::label $w.hlf.n.f5.main.plot.plotxlabelx -textvar MapToolsPlotX -width 5]
   
-  set HistPlotBinaryFrame [ttk::frame $w.hlf.n.f5.main.binaryframe]
-  
-  grid $MapToolsFrame -row 0 -column 0 -sticky nsew
- 
-  grid $MapToolsFileFrame -row 0 -column 0 -sticky nsew
-  grid $MapToolsMol -row 0 -column 0 -sticky nsew
-  grid $MapToolsMolMenuButton   -row 0 -column 1 -sticky nsew
-  grid $MapToolsSelectMap   -row 0 -column 2 -sticky nsew
-  
-  grid $MapToolsInfoFrame -row 1 -column 0 -sticky nsew
-  grid $MapToolsMapOriginLabel -row 0 -column 0 -sticky nsew 
-  grid $MapToolsMapOriginLabelDisp -row 0 -column 1 -sticky nsew -columnspan 4
-  grid $MapToolsMapXsizeLabel -row 1 -column 0 -sticky nsew 
-  grid $MapToolsMapXsizeLabelDisp -row 1 -column 1 -sticky nsew
-  grid $MapToolsMapYsizeLabel -row 1 -column 2 -sticky nsew 
-  grid $MapToolsMapYsizeLabelDisp -row 1 -column 3 -sticky nsew
-  grid $MapToolsMapZsizeLabel -row 1 -column 4 -sticky nsew 
-  grid $MapToolsMapZsizeLabelDisp -row 1 -column 5 -sticky nsew
-  grid $MapToolsMapMinLabel -row 2 -column 0 -sticky nsew
-  grid $MapToolsMapMinLabelDisp -row 2 -column 1 -sticky nsew -columnspan 4
-  grid $MapToolsMapMaxLabel -row 2 -column 2 -sticky nsew
-  grid $MapToolsMapMaxLabelDisp -row 2 -column 3 -sticky nsew -columnspan 4
+  set ShowMapToolsHist [ttk::label $w.hlf.n.f5.main.showhist -text "$rightPoint Histogram..." -anchor w]
+  set HideMapToolsHist [ttk::label $w.hlf.n.f5.main.plot.hidehist -text "$downPoint Histogram" -anchor w]
+
+  $HistPlotFrame configure -labelwidget $HideMapToolsHist
+  bind $HideMapToolsHist <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.plot
+      grid .mdffgui.hlf.n.f5.main.showhist
+      MDFFGUI::gui::resizeToActiveTab
+  }
+  bind $ShowMapToolsHist <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.showhist
+      grid .mdffgui.hlf.n.f5.main.plot -row 2 -column 0 -sticky nsew -pady 5
+      grid columnconfigure .mdffgui.hlf.n.f5.main.plot 1 -weight 1
+      MDFFGUI::gui::resizeToActiveTab
+  }
    
-  grid $HistPlotFrame -row 3 -column 0 -sticky nsw
+  #grid $HistPlotFrame -row 2 -column 0 -sticky nsw
+  grid $ShowMapToolsHist -row 2 -column 0 -sticky nswe -pady 5 -padx $ShowBTNPadX
   grid $GenerateHistPlot -row 0 -column 0 -sticky nsew
   grid $HistPlotBinLabel -row 0 -column 1 -sticky nsew
   grid $HistPlotBinEntry -row 0 -column 2 -sticky nsew
@@ -1024,7 +1057,11 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsPlotXLabelX -row 1 -column 1 -sticky nsew
  # grid $histplot -row 1 -column 0 -sticky nsew
 
-  grid $HistPlotBinaryFrame -row 2 -column 0 -sticky nswe
+  set HistPlotUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw -text "Single Map Operations"]
+  set MapToolsTrimLabel [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabel -text "Trim map in each direction:"]
+  
+  grid $HistPlotUnaryFrame -row 4 -column 0 -sticky nswe
+  grid $MapToolsTrimLabel -row 0 -column 0 -sticky nswe
 
 
   #Basic MDFF analysis
