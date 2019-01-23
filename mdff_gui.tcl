@@ -153,7 +153,13 @@ namespace eval MDFFGUI:: {
     #MapTools Settings. Maybe move this into an entirely separate namespace?
     variable MapToolsMolID ""  
     variable MapToolsPlotX ""  
-
+    variable HistPlotBins 30
+    variable HistLog 1 
+    variable MapToolsXsize ""
+    variable MapToolsYsize ""
+    variable MapToolsZsize ""
+    variable MapToolsMin
+    variable MapToolsMax
 
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
@@ -937,9 +943,10 @@ proc MDFFGUI::gui::mdffgui {} {
   grid columnconfigure $NBTab5 0 -weight 1
   grid rowconfigure $NBTab5 0 -weight 1
   set MapToolsFrame [ttk::frame $w.hlf.n.f5.main]
-  grid columnconfigure $MapToolsFrame 0 -weight 1
+  grid columnconfigure $MapToolsFrame 1 -weight 1
   
   set MapToolsFileFrame [ttk::frame $w.hlf.n.f5.main.fileframe]
+  #grid columnconfigure $MapToolsFileFrame 1 -weight 1
  #Following is for using already loaded volumes
   set MapToolsMol [ttk::label $w.hlf.n.f5.main.fileframe.mollabel -text "Mol ID (Density Map):"]
   set MapToolsMolMenuButton [ttk::menubutton $w.hlf.n.f5.main.fileframe.molmenubutton -textvar MDFFGUI::gui::MapToolsMolMenuText -menu $w.hlf.n.f5.main.fileframe.molmenubutton.molmenu]
@@ -951,19 +958,38 @@ proc MDFFGUI::gui::mdffgui {} {
   trace add variable MDFFGUI::settings::MapToolsMolID write MDFFGUI::gui::set_mapmol_text
   set MDFFGUI::settings::MapToolsMolID $nullMolString
   
-  set HistPlotFrame [ttk::frame $w.hlf.n.f5.main.plot]
-  grid columnconfigure $HistPlotFrame 0 -weight 1  
+  set MapToolsSelectMap [ttk::button $w.hlf.n.f5.main.fileframe.mapbutton -text "Browse" -command {MDFFGUI::gui::get_map} ]
+ 
+  
+  set MapToolsInfoFrame [ttk::labelframe $w.hlf.n.f5.main.infoframe -labelanchor nw -text "Map Info"]
+#  grid columnconfigure $MapToolsInfoFrame 1 -weight 1
+  set MapToolsMapOriginLabel [ttk::label $w.hlf.n.f5.main.infoframe.originlabel -text "Origin: "]
+  set MapToolsMapOriginLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.originlabeldisp -textvar MDFFGUI::settings::MapToolsOrigin]
+  set MapToolsMapXsizeLabel [ttk::label $w.hlf.n.f5.main.infoframe.xsizelabel -text "X Size: "]
+  set MapToolsMapXsizeLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.xsizelabeldisp -textvar MDFFGUI::settings::MapToolsXsize]
+  set MapToolsMapYsizeLabel [ttk::label $w.hlf.n.f5.main.infoframe.ysizelabel -text "Y Size: "]
+  set MapToolsMapYsizeLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.ysizelabeldisp -textvar MDFFGUI::settings::MapToolsYsize]
+  set MapToolsMapZsizeLabel [ttk::label $w.hlf.n.f5.main.infoframe.zsizelabel -text "Z Size: "]
+  set MapToolsMapZsizeLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.zsizelabeldisp -textvar MDFFGUI::settings::MapToolsZsize]
+  set MapToolsMapMinLabel [ttk::label $w.hlf.n.f5.main.infoframe.minlabel -text "Min Value: "]
+  set MapToolsMapMinLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.minlabeldisp -textvar MDFFGUI::settings::MapToolsMin]
+  set MapToolsMapMaxLabel [ttk::label $w.hlf.n.f5.main.infoframe.maxlabel -text "Max Value: "]
+  set MapToolsMapMaxLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.maxlabeldisp -textvar MDFFGUI::settings::MapToolsMax]
+  
+  trace add variable MDFFGUI::settings::MapToolsMolID write MDFFGUI::gui::set_map_stats
+  
+  set HistPlotFrame [ttk::labelframe $w.hlf.n.f5.main.plot -labelanchor nw -text "Histogram"]
+  #grid columnconfigure $HistPlotFrame 1 -weight 1  
   set GenerateHistPlot [ttk::button $w.hlf.n.f5.main.plot.histbutton -text "Generate Histogram" -command {MDFFGUI::gui::generate_histogram} -state enabled]
- #below is for embedded multiplot, which seems to cause issues with undrawing all the rectangles/lines
- #so sticking with making fresh plots every click in its own window for now...
- # global HistPlot
-  #set HistPlot [multiplot embed $w.hlf.n.f5.main.plot -xsize 600 -ysize 400 -title "Density Histogram" -xlabel "Density" -ylabel "Number of Voxels" -nolines -autoscale ]
-  #set histplot [$HistPlot getpath]
+  set HistPlotBinLabel [ttk::label $w.hlf.n.f5.main.plot.histbinlabel -text "Number of Bins:"]
+  set HistPlotBinEntry [ttk::entry $w.hlf.n.f5.main.plot.histbinentry -textvariable MDFFGUI::settings::HistPlotBins -width 5]
+  set HistPlotLog [ttk::radiobutton $w.hlf.n.f5.main.plot.log -variable MDFFGUI::settings::HistLog -value 1 -text "Log10"]
+  set HistPlotNot [ttk::radiobutton $w.hlf.n.f5.main.plot.not -variable MDFFGUI::settings::HistLog -value 0 -text "Unchanged"]
 
   global MapToolsPlotX
   set MapToolsPlotX 0
-  set MapToolsPlotXLabel [ttk::label $w.hlf.n.f5.main.plot.plotxlabel -text "Selected Voxel Value: " ]
-  set MapToolsPlotXLabelX [ttk::label $w.hlf.n.f5.main.plot.plotxlabelx -textvar MapToolsPlotX]
+  set MapToolsPlotXLabel [ttk::label $w.hlf.n.f5.main.plot.plotxlabel -text "Selected Voxel Value: "]
+  set MapToolsPlotXLabelX [ttk::label $w.hlf.n.f5.main.plot.plotxlabelx -textvar MapToolsPlotX -width 5]
   
   set HistPlotBinaryFrame [ttk::frame $w.hlf.n.f5.main.binaryframe]
   
@@ -972,9 +998,28 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsFileFrame -row 0 -column 0 -sticky nsew
   grid $MapToolsMol -row 0 -column 0 -sticky nsew
   grid $MapToolsMolMenuButton   -row 0 -column 1 -sticky nsew
+  grid $MapToolsSelectMap   -row 0 -column 2 -sticky nsew
   
-  grid $HistPlotFrame -row 1 -column 0 -sticky nsw
+  grid $MapToolsInfoFrame -row 1 -column 0 -sticky nsew
+  grid $MapToolsMapOriginLabel -row 0 -column 0 -sticky nsew 
+  grid $MapToolsMapOriginLabelDisp -row 0 -column 1 -sticky nsew -columnspan 4
+  grid $MapToolsMapXsizeLabel -row 1 -column 0 -sticky nsew 
+  grid $MapToolsMapXsizeLabelDisp -row 1 -column 1 -sticky nsew
+  grid $MapToolsMapYsizeLabel -row 1 -column 2 -sticky nsew 
+  grid $MapToolsMapYsizeLabelDisp -row 1 -column 3 -sticky nsew
+  grid $MapToolsMapZsizeLabel -row 1 -column 4 -sticky nsew 
+  grid $MapToolsMapZsizeLabelDisp -row 1 -column 5 -sticky nsew
+  grid $MapToolsMapMinLabel -row 2 -column 0 -sticky nsew
+  grid $MapToolsMapMinLabelDisp -row 2 -column 1 -sticky nsew -columnspan 4
+  grid $MapToolsMapMaxLabel -row 2 -column 2 -sticky nsew
+  grid $MapToolsMapMaxLabelDisp -row 2 -column 3 -sticky nsew -columnspan 4
+   
+  grid $HistPlotFrame -row 3 -column 0 -sticky nsw
   grid $GenerateHistPlot -row 0 -column 0 -sticky nsew
+  grid $HistPlotBinLabel -row 0 -column 1 -sticky nsew
+  grid $HistPlotBinEntry -row 0 -column 2 -sticky nsew
+  grid $HistPlotLog -row 0 -column 3 -sticky nsew
+  grid $HistPlotNot -row 0 -column 4 -sticky nsew
   grid $MapToolsPlotXLabel -row 1 -column 0 -sticky nsew
   grid $MapToolsPlotXLabelX -row 1 -column 1 -sticky nsew
  # grid $histplot -row 1 -column 0 -sticky nsew
@@ -2192,6 +2237,17 @@ proc MDFFGUI::gui::get_psf {} {
   }
 }
 
+proc MDFFGUI::gui::get_map {} {
+  variable CurrentPDBFile
+ 
+  set pathname [tk_getOpenFile -defaultextension ".mrc" -filetypes {{mrc {.mrc}} {ccp4 {.ccp4}} {situs {.sit}} {dx {.dx}} {all {*}}}]
+  if {$pathname != ""} {
+    if {$MDFFGUI::settings::MapToolsMolID != ""} {mol off $MDFFGUI::settings::MapToolsMolID}  
+    set mapmol [mol new $pathname] 
+    set MDFFGUI::settings::MapToolsMolID $mapmol
+  }
+}
+
 proc MDFFGUI::gui::set_mol_text {args} {
   variable MolMenuText 
   if { ! [catch { molinfo $MDFFGUI::settings::MolID get name } name ] } {
@@ -2212,6 +2268,18 @@ proc MDFFGUI::gui::set_mapmol_text {args} {
   } else {
     set MapToolsMolMenuText $MDFFGUI::settings::MapToolsMolID    
   }
+}
+
+proc MDFFGUI::gui::set_map_stats {args} { 
+  set MDFFGUI::settings::MapToolsOrigin [voltool info origin -mol $MDFFGUI::settings::MapToolsMolID]    
+  set MDFFGUI::settings::MapToolsXsize [voltool info xsize -mol $MDFFGUI::settings::MapToolsMolID]    
+  set MDFFGUI::settings::MapToolsYsize [voltool info ysize -mol $MDFFGUI::settings::MapToolsMolID]    
+  set MDFFGUI::settings::MapToolsZsize [voltool info zsize -mol $MDFFGUI::settings::MapToolsMolID]    
+  
+  set minmax [voltool info minmax -mol $MDFFGUI::settings::MapToolsMolID]    
+  set MDFFGUI::settings::MapToolsMin [lindex $minmax 0]    
+  set MDFFGUI::settings::MapToolsMax [lindex $minmax 1]    
+
 }
 
 proc MDFFGUI::gui::fill_mol_menu {args} {
@@ -2260,8 +2328,7 @@ proc MDFFGUI::gui::fill_mapmol_menu {args} {
 
 proc MDFFGUI::gui::generate_histogram {} {
   global HistPlot 
-  #make this an option
-  set nbins 30
+  set nbins $MDFFGUI::settings::HistPlotBins
   if {[info exists HistPlot]} {$HistPlot quit}
   
   global MAPMOL
@@ -2280,9 +2347,7 @@ proc MDFFGUI::gui::generate_histogram {} {
   }
   
   #Make histogram values on log scale to reduce drastic difference between highest and lowest bins.
-  #TODO: make this an option.
-  set log 1
-  if {$log} {
+  if {$MDFFGUI::settings::HistLog} {
     for {set i 0} {$i < $nbins} {incr i} {
       lset histogram $i [expr log10([lindex $histogram $i])]
     }
