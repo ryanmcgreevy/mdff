@@ -160,6 +160,12 @@ namespace eval MDFFGUI:: {
     variable MapToolsZsize ""
     variable MapToolsMin
     variable MapToolsMax
+    variable TrimX1 0
+    variable TrimX2 0
+    variable TrimY1 0
+    variable TrimY2 0
+    variable TrimZ1 0
+    variable TrimZ2 0
 
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
@@ -1046,7 +1052,6 @@ proc MDFFGUI::gui::mdffgui {} {
       MDFFGUI::gui::resizeToActiveTab
   }
    
-  #grid $HistPlotFrame -row 2 -column 0 -sticky nsw
   grid $ShowMapToolsHist -row 2 -column 0 -sticky nswe -pady 5 -padx $ShowBTNPadX
   grid $GenerateHistPlot -row 0 -column 0 -sticky nsew
   grid $HistPlotBinLabel -row 0 -column 1 -sticky nsew
@@ -1055,13 +1060,56 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $HistPlotNot -row 0 -column 4 -sticky nsew
   grid $MapToolsPlotXLabel -row 1 -column 0 -sticky nsew
   grid $MapToolsPlotXLabelX -row 1 -column 1 -sticky nsew
- # grid $histplot -row 1 -column 0 -sticky nsew
 
-  set HistPlotUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw -text "Single Map Operations"]
+
+  #Trim
+  set MapToolsUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw]
   set MapToolsTrimLabel [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabel -text "Trim map in each direction:"]
+  set MapToolsTrimLabelX1 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelx1 -text "-x:"]
+  set MapToolsTrimEntryX1 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryx1 -textvariable MDFFGUI::settings::TrimX1 -width 5]
+  set MapToolsTrimLabelX2 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelx2 -text "+x:"]
+  set MapToolsTrimEntryX2 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryx2 -textvariable MDFFGUI::settings::TrimX2 -width 5]
+  set MapToolsTrimLabelY1 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabely1 -text "-y:"]
+  set MapToolsTrimEntryY1 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryy1 -textvariable MDFFGUI::settings::TrimY1 -width 5]
+  set MapToolsTrimLabelY2 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabely2 -text "+y:"]
+  set MapToolsTrimEntryY2 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryy2 -textvariable MDFFGUI::settings::TrimY2 -width 5]
+  set MapToolsTrimLabelZ1 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelz1 -text "-z:"]
+  set MapToolsTrimEntryZ1 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryz1 -textvariable MDFFGUI::settings::TrimZ1 -width 5]
+  set MapToolsTrimLabelZ2 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelz2 -text "+z:"]
+  set MapToolsTrimEntryZ2 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryz2 -textvariable MDFFGUI::settings::TrimZ2 -width 5]
+  set MapToolsTrimButton [ttk::button $w.hlf.n.f5.main.unaryframe.trimbutton -text "Trim" -command { voltool trim -amt "$MDFFGUI::settings::TrimX1 $MDFFGUI::settings::TrimX2 $MDFFGUI::settings::TrimY1 $MDFFGUI::settings::TrimY2 $MDFFGUI::settings::TrimZ1 $MDFFGUI::settings::TrimZ2" -mol $MDFFGUI::settings::MapToolsMolID } ]
   
-  grid $HistPlotUnaryFrame -row 4 -column 0 -sticky nswe
+  set ShowMapToolsUnary [ttk::label $w.hlf.n.f5.main.showunary -text "$rightPoint Single Map Ops..." -anchor w]
+  set HideMapToolsUnary [ttk::label $w.hlf.n.f5.main.unaryframe.hideunary -text "$downPoint Single Map Ops" -anchor w]
+
+  $MapToolsUnaryFrame configure -labelwidget $HideMapToolsUnary
+  bind $HideMapToolsUnary <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.unaryframe
+      grid .mdffgui.hlf.n.f5.main.showunary
+      MDFFGUI::gui::resizeToActiveTab
+  }
+  bind $ShowMapToolsUnary <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.showunary
+      grid .mdffgui.hlf.n.f5.main.unaryframe -row 3 -column 0 -sticky nsew -pady 5
+      grid columnconfigure .mdffgui.hlf.n.f5.main.unaryframe 1 -weight 1
+      MDFFGUI::gui::resizeToActiveTab
+  }
+  
+  grid $ShowMapToolsUnary -row 3 -column 0 -sticky nswe
   grid $MapToolsTrimLabel -row 0 -column 0 -sticky nswe
+  grid $MapToolsTrimLabelX1 -row 0 -column 1 -sticky nswe
+  grid $MapToolsTrimEntryX1 -row 0 -column 2 -sticky nswe
+  grid $MapToolsTrimLabelX2 -row 0 -column 3 -sticky nswe
+  grid $MapToolsTrimEntryX2 -row 0 -column 4 -sticky nswe
+  grid $MapToolsTrimLabelY1 -row 0 -column 5 -sticky nswe
+  grid $MapToolsTrimEntryY1 -row 0 -column 6 -sticky nswe
+  grid $MapToolsTrimLabelY2 -row 0 -column 7 -sticky nswe
+  grid $MapToolsTrimEntryY2 -row 0 -column 8 -sticky nswe
+  grid $MapToolsTrimLabelZ1 -row 0 -column 9 -sticky nswe
+  grid $MapToolsTrimEntryZ1 -row 0 -column 10 -sticky nswe
+  grid $MapToolsTrimLabelZ2 -row 0 -column 11 -sticky nswe
+  grid $MapToolsTrimEntryZ2 -row 0 -column 12 -sticky nswe
+  grid $MapToolsTrimButton -row 0 -column 13 -sticky nsw
 
 
   #Basic MDFF analysis
