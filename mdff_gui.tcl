@@ -166,6 +166,12 @@ namespace eval MDFFGUI:: {
     variable TrimY2 0
     variable TrimZ1 0
     variable TrimZ2 0
+    variable CropX1 0
+    variable CropX2 0
+    variable CropY1 0
+    variable CropY2 0
+    variable CropZ1 0
+    variable CropZ2 0
 
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
@@ -1062,8 +1068,9 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsPlotXLabelX -row 1 -column 1 -sticky nsew
 
 
-  #Trim
   set MapToolsUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw]
+  
+  #Trim
   set MapToolsTrimLabel [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabel -text "Trim map in each direction:"]
   set MapToolsTrimLabelX1 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelx1 -text "-x:"]
   set MapToolsTrimEntryX1 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryx1 -textvariable MDFFGUI::settings::TrimX1 -width 5]
@@ -1078,6 +1085,21 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsTrimLabelZ2 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelz2 -text "+z:"]
   set MapToolsTrimEntryZ2 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryz2 -textvariable MDFFGUI::settings::TrimZ2 -width 5]
   set MapToolsTrimButton [ttk::button $w.hlf.n.f5.main.unaryframe.trimbutton -text "Trim" -command { voltool trim -amt "$MDFFGUI::settings::TrimX1 $MDFFGUI::settings::TrimX2 $MDFFGUI::settings::TrimY1 $MDFFGUI::settings::TrimY2 $MDFFGUI::settings::TrimZ1 $MDFFGUI::settings::TrimZ2" -mol $MDFFGUI::settings::MapToolsMolID } ]
+  
+  set MapToolsCropLabel [ttk::label $w.hlf.n.f5.main.unaryframe.croplabel -text "Crop map in coordinate space:"]
+  set MapToolsCropLabelX1 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabelx1 -text "minx:"]
+  set MapToolsCropEntryX1 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryx1 -textvariable MDFFGUI::settings::CropX1 -width 5]
+  set MapToolsCropLabelX2 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabelx2 -text "maxx:"]
+  set MapToolsCropEntryX2 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryx2 -textvariable MDFFGUI::settings::CropX2 -width 5]
+  set MapToolsCropLabelY1 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabely1 -text "miny:"]
+  set MapToolsCropEntryY1 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryy1 -textvariable MDFFGUI::settings::CropY1 -width 5]
+  set MapToolsCropLabelY2 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabely2 -text "maxy:"]
+  set MapToolsCropEntryY2 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryy2 -textvariable MDFFGUI::settings::CropY2 -width 5]
+  set MapToolsCropLabelZ1 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabelz1 -text "minz:"]
+  set MapToolsCropEntryZ1 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryz1 -textvariable MDFFGUI::settings::CropZ1 -width 5]
+  set MapToolsCropLabelZ2 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabelz2 -text "maxz:"]
+  set MapToolsCropEntryZ2 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryz2 -textvariable MDFFGUI::settings::CropZ2 -width 5]
+  set MapToolsCropButton [ttk::button $w.hlf.n.f5.main.unaryframe.cropbutton -text "Crop" -command { voltool crop -amt "$MDFFGUI::settings::CropX1 $MDFFGUI::settings::CropY1 $MDFFGUI::settings::CropZ1 $MDFFGUI::settings::CropX2 $MDFFGUI::settings::CropY2 $MDFFGUI::settings::CropZ2" -mol $MDFFGUI::settings::MapToolsMolID } ]
   
   set ShowMapToolsUnary [ttk::label $w.hlf.n.f5.main.showunary -text "$rightPoint Single Map Ops..." -anchor w]
   set HideMapToolsUnary [ttk::label $w.hlf.n.f5.main.unaryframe.hideunary -text "$downPoint Single Map Ops" -anchor w]
@@ -1096,6 +1118,7 @@ proc MDFFGUI::gui::mdffgui {} {
   }
   
   grid $ShowMapToolsUnary -row 3 -column 0 -sticky nswe
+  
   grid $MapToolsTrimLabel -row 0 -column 0 -sticky nswe
   grid $MapToolsTrimLabelX1 -row 0 -column 1 -sticky nswe
   grid $MapToolsTrimEntryX1 -row 0 -column 2 -sticky nswe
@@ -1110,6 +1133,21 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsTrimLabelZ2 -row 0 -column 11 -sticky nswe
   grid $MapToolsTrimEntryZ2 -row 0 -column 12 -sticky nswe
   grid $MapToolsTrimButton -row 0 -column 13 -sticky nsw
+  
+  grid $MapToolsCropLabel -row 1 -column 0 -sticky nswe
+  grid $MapToolsCropLabelX1 -row 1 -column 1 -sticky nswe
+  grid $MapToolsCropEntryX1 -row 1 -column 2 -sticky nswe
+  grid $MapToolsCropLabelX2 -row 1 -column 3 -sticky nswe
+  grid $MapToolsCropEntryX2 -row 1 -column 4 -sticky nswe
+  grid $MapToolsCropLabelY1 -row 1 -column 5 -sticky nswe
+  grid $MapToolsCropEntryY1 -row 1 -column 6 -sticky nswe
+  grid $MapToolsCropLabelY2 -row 1 -column 7 -sticky nswe
+  grid $MapToolsCropEntryY2 -row 1 -column 8 -sticky nswe
+  grid $MapToolsCropLabelZ1 -row 1 -column 9 -sticky nswe
+  grid $MapToolsCropEntryZ1 -row 1 -column 10 -sticky nswe
+  grid $MapToolsCropLabelZ2 -row 1 -column 11 -sticky nswe
+  grid $MapToolsCropEntryZ2 -row 1 -column 12 -sticky nswe
+  grid $MapToolsCropButton -row 1 -column 13 -sticky nsw
 
 
   #Basic MDFF analysis
