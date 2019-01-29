@@ -176,6 +176,9 @@ namespace eval MDFFGUI:: {
     variable CropZ1 0
     variable CropZ2 0
     variable MapToolsStructMolID ""
+    variable FitSel "all"
+    variable FitRes ""
+    
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
   [file join $env(CHARMMPARDIR) par_all36_na.prm] [file join $env(CHARMMPARDIR) par_all36_carb.prm] \
@@ -1074,6 +1077,7 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsPlotXLabel -row 1 -column 0 -sticky nsew
   grid $MapToolsPlotXLabelX -row 1 -column 1 -sticky nsew
 
+  #structure ops
   set MapToolsStructFrame [ttk::labelframe $w.hlf.n.f5.main.structframe -labelanchor nw]
 
   set MapToolsStructMol [ttk::label $w.hlf.n.f5.main.structframe.mollabel -text "Mol ID (Structure):"]
@@ -1088,6 +1092,16 @@ proc MDFFGUI::gui::mdffgui {} {
   
   set MapToolsSelectStruct [ttk::button $w.hlf.n.f5.main.structframe.structbutton -text "Browse" -command {MDFFGUI::gui::get_maptools_struct} ]
 
+  #Fit
+  set MapToolsFitLabel [ttk::label $w.hlf.n.f5.main.structframe.fitlabel -text "Rigid Body Fitting:"]
+  set MapToolsFitLabelSel [ttk::label $w.hlf.n.f5.main.structframe.fitlabelsel -text "atom selection:"]
+  set MapToolsFitEntrySel [ttk::entry $w.hlf.n.f5.main.structframe.fitentrysel -textvariable MDFFGUI::settings::FitSel -width 20]
+  set MapToolsFitLabelRes [ttk::label $w.hlf.n.f5.main.structframe.fitlabelres -text "map resolution:"]
+  set MapToolsFitEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.fitentryres -textvariable MDFFGUI::settings::FitRes -width 5]
+  set MapToolsFitButton [ttk::button $w.hlf.n.f5.main.structframe.fitbutton -text "Fit" -command { voltool fit [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::FitSel] -res $MDFFGUI::settings::FitRes -mol $MDFFGUI::settings::MapToolsMolID } ]
+
+ 
+ 
   set ShowMapToolsStruct [ttk::label $w.hlf.n.f5.main.showstruct -text "$rightPoint Structure Ops..." -anchor w]
   set HideMapToolsStruct [ttk::label $w.hlf.n.f5.main.structframe.hidestruct -text "$downPoint Structure Ops" -anchor w]
 
@@ -1109,7 +1123,15 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsStructMol -row 0 -column 0 -sticky nswe
   grid $MapToolsStructMolMenuButton -row 0 -column 1 -sticky nswe
   grid $MapToolsSelectStruct -row 0 -column 2 -sticky nswe
+
+  grid $MapToolsFitLabel -row 1 -column 0 -sticky nswe
+  grid $MapToolsFitLabelSel -row 1 -column 1 -sticky nswe
+  grid $MapToolsFitEntrySel -row 1 -column 2 -sticky nswe
+  grid $MapToolsFitLabelRes -row 1 -column 3 -sticky nswe
+  grid $MapToolsFitEntryRes -row 1 -column 4 -sticky nswe
+  grid $MapToolsFitButton -row 1 -column 5 -sticky nswe
   
+  #unary ops
   set MapToolsUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw]
   #Trim
   set MapToolsTrimLabel [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabel -text "Trim map in each direction:"]
