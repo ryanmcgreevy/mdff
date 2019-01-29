@@ -178,6 +178,9 @@ namespace eval MDFFGUI:: {
     variable MapToolsStructMolID ""
     variable FitSel "all"
     variable FitRes ""
+    variable MaskSel "all"
+    variable MaskRes ""
+    variable MaskCutoff ""
     
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
@@ -1096,10 +1099,19 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsFitLabel [ttk::label $w.hlf.n.f5.main.structframe.fitlabel -text "Rigid Body Fitting:"]
   set MapToolsFitLabelSel [ttk::label $w.hlf.n.f5.main.structframe.fitlabelsel -text "atom selection:"]
   set MapToolsFitEntrySel [ttk::entry $w.hlf.n.f5.main.structframe.fitentrysel -textvariable MDFFGUI::settings::FitSel -width 20]
-  set MapToolsFitLabelRes [ttk::label $w.hlf.n.f5.main.structframe.fitlabelres -text "map resolution:"]
+  set MapToolsFitLabelRes [ttk::label $w.hlf.n.f5.main.structframe.fitlabelres -text "map resolution (A):"]
   set MapToolsFitEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.fitentryres -textvariable MDFFGUI::settings::FitRes -width 5]
   set MapToolsFitButton [ttk::button $w.hlf.n.f5.main.structframe.fitbutton -text "Fit" -command { voltool fit [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::FitSel] -res $MDFFGUI::settings::FitRes -mol $MDFFGUI::settings::MapToolsMolID } ]
 
+  #Mask
+  set MapToolsMaskLabel [ttk::label $w.hlf.n.f5.main.structframe.masklabel -text "Map Masking:"]
+  set MapToolsMaskLabelSel [ttk::label $w.hlf.n.f5.main.structframe.masklabelsel -text "atom selection:"]
+  set MapToolsMaskEntrySel [ttk::entry $w.hlf.n.f5.main.structframe.maskentrysel -textvariable MDFFGUI::settings::MaskSel -width 20]
+  set MapToolsMaskLabelRes [ttk::label $w.hlf.n.f5.main.structframe.masklabelres -text "map resolution (A):"]
+  set MapToolsMaskEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.maskentryres -textvariable MDFFGUI::settings::MaskRes -width 5]
+ # set MapToolsMaskLabelCutoff [ttk::label $w.hlf.n.f5.main.structframe.masklabelcutoff -text "cutoff (A):"]
+ # set MapToolsMaskEntryCutoff [ttk::entry $w.hlf.n.f5.main.structframe.maskentrycutoff -textvariable MDFFGUI::settings::MaskCutoff -width 5]
+  set MapToolsMaskButton [ttk::button $w.hlf.n.f5.main.structframe.maskbutton -text "Mask" -command { voltool mask [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::MaskSel] -res $MDFFGUI::settings::MaskRes -cutoff $MDFFGUI::settings::MaskRes -mol $MDFFGUI::settings::MapToolsMolID } ]
  
  
   set ShowMapToolsStruct [ttk::label $w.hlf.n.f5.main.showstruct -text "$rightPoint Structure Ops..." -anchor w]
@@ -1130,6 +1142,13 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsFitLabelRes -row 1 -column 3 -sticky nswe
   grid $MapToolsFitEntryRes -row 1 -column 4 -sticky nswe
   grid $MapToolsFitButton -row 1 -column 5 -sticky nswe
+  
+  grid $MapToolsMaskLabel -row 2 -column 0 -sticky nswe
+  grid $MapToolsMaskLabelSel -row 2 -column 1 -sticky nswe
+  grid $MapToolsMaskEntrySel -row 2 -column 2 -sticky nswe
+  grid $MapToolsMaskLabelRes -row 2 -column 3 -sticky nswe
+  grid $MapToolsMaskEntryRes -row 2 -column 4 -sticky nswe
+  grid $MapToolsMaskButton -row 2 -column 5 -sticky nswe
   
   #unary ops
   set MapToolsUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw]
