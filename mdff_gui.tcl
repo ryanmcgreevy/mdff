@@ -83,6 +83,7 @@ namespace eval MDFFGUI:: {
     variable ShowBTNPadX
 
     variable MapToolsMolMenuText
+    variable MapToolsStructMolMenuText
     #variable HistPlot
   }
   namespace eval settings:: {
@@ -160,6 +161,8 @@ namespace eval MDFFGUI:: {
     variable MapToolsZsize ""
     variable MapToolsMin
     variable MapToolsMax
+    variable MapToolsCOM ""
+    variable MapToolsOrigin ""
     variable TrimX1 0
     variable TrimX2 0
     variable TrimY1 0
@@ -172,7 +175,7 @@ namespace eval MDFFGUI:: {
     variable CropY2 0
     variable CropZ1 0
     variable CropZ2 0
-
+    variable MapToolsStructMolID ""
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
   [file join $env(CHARMMPARDIR) par_all36_na.prm] [file join $env(CHARMMPARDIR) par_all36_carb.prm] \
@@ -985,6 +988,8 @@ proc MDFFGUI::gui::mdffgui {} {
   grid columnconfigure $MapToolsInfoFrame 1 -weight 1
   set MapToolsMapOriginLabel [ttk::label $w.hlf.n.f5.main.infoframe.originlabel -text "Origin: "]
   set MapToolsMapOriginLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.originlabeldisp -textvar MDFFGUI::settings::MapToolsOrigin]
+  set MapToolsMapCOMLabel [ttk::label $w.hlf.n.f5.main.infoframe.comlabel -text "Center of Mass: "]
+  set MapToolsMapCOMLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.comlabeldisp -textvar MDFFGUI::settings::MapToolsCOM]
   set MapToolsMapXsizeLabel [ttk::label $w.hlf.n.f5.main.infoframe.xsizelabel -text "X Size: "]
   set MapToolsMapXsizeLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.xsizelabeldisp -textvar MDFFGUI::settings::MapToolsXsize]
   set MapToolsMapYsizeLabel [ttk::label $w.hlf.n.f5.main.infoframe.ysizelabel -text "Y Size: "]
@@ -1018,6 +1023,8 @@ proc MDFFGUI::gui::mdffgui {} {
   #grid $MapToolsInfoFrame -row 1 -column 0 -sticky nsew
   grid $MapToolsMapOriginLabel -row 0 -column 0 -sticky nsw 
   grid $MapToolsMapOriginLabelDisp -row 0 -column 1 -sticky nsw
+  grid $MapToolsMapCOMLabel -row 0 -column 2 -sticky nsw 
+  grid $MapToolsMapCOMLabelDisp -row 0 -column 3 -sticky nsw
   grid $MapToolsMapXsizeLabel -row 1 -column 0 -sticky nsw 
   grid $MapToolsMapXsizeLabelDisp -row 1 -column 1 -sticky nsw
   grid $MapToolsMapYsizeLabel -row 1 -column 2 -sticky nsw 
@@ -1067,9 +1074,43 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsPlotXLabel -row 1 -column 0 -sticky nsew
   grid $MapToolsPlotXLabelX -row 1 -column 1 -sticky nsew
 
+  set MapToolsStructFrame [ttk::labelframe $w.hlf.n.f5.main.structframe -labelanchor nw]
 
-  set MapToolsUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw]
+  set MapToolsStructMol [ttk::label $w.hlf.n.f5.main.structframe.mollabel -text "Mol ID (Structure):"]
+  set MapToolsStructMolMenuButton [ttk::menubutton $w.hlf.n.f5.main.structframe.molmenubutton -textvar MDFFGUI::gui::MapToolsStructMolMenuText -menu $w.hlf.n.f5.main.structframe.molmenubutton.molmenu]
+  set CurrentMapToolsStructMolMenu [menu $w.hlf.n.f5.main.structframe.molmenubutton.molmenu -tearoff no]
   
+  #set_mol_text 
+  fill_mapmol_menu $CurrentMapToolsStructMolMenu
+  trace add variable ::vmd_molecule write "MDFFGUI::gui::fill_mapstructmol_menu $CurrentMapToolsStructMolMenu"
+  trace add variable MDFFGUI::settings::MapToolsStructMolID write MDFFGUI::gui::set_mapstructmol_text
+  set MDFFGUI::settings::MapToolsStructMolID $nullMolString
+  
+  set MapToolsSelectStruct [ttk::button $w.hlf.n.f5.main.structframe.structbutton -text "Browse" -command {MDFFGUI::gui::get_maptools_struct} ]
+
+  set ShowMapToolsStruct [ttk::label $w.hlf.n.f5.main.showstruct -text "$rightPoint Structure Ops..." -anchor w]
+  set HideMapToolsStruct [ttk::label $w.hlf.n.f5.main.structframe.hidestruct -text "$downPoint Structure Ops" -anchor w]
+
+  $MapToolsStructFrame configure -labelwidget $HideMapToolsStruct
+  bind $HideMapToolsStruct <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.structframe
+      grid .mdffgui.hlf.n.f5.main.showstruct
+      MDFFGUI::gui::resizeToActiveTab
+  }
+  bind $ShowMapToolsStruct <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.showstruct
+      grid .mdffgui.hlf.n.f5.main.structframe -row 3 -column 0 -sticky nsew -pady 5
+      grid columnconfigure .mdffgui.hlf.n.f5.main.structframe 1 -weight 1
+      MDFFGUI::gui::resizeToActiveTab
+  }
+  
+  grid $ShowMapToolsStruct -row 3 -column 0 -sticky nswe
+ 
+  grid $MapToolsStructMol -row 0 -column 0 -sticky nswe
+  grid $MapToolsStructMolMenuButton -row 0 -column 1 -sticky nswe
+  grid $MapToolsSelectStruct -row 0 -column 2 -sticky nswe
+  
+  set MapToolsUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw]
   #Trim
   set MapToolsTrimLabel [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabel -text "Trim map in each direction:"]
   set MapToolsTrimLabelX1 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelx1 -text "-x:"]
@@ -1112,12 +1153,12 @@ proc MDFFGUI::gui::mdffgui {} {
   }
   bind $ShowMapToolsUnary <Button-1> {
       grid remove .mdffgui.hlf.n.f5.main.showunary
-      grid .mdffgui.hlf.n.f5.main.unaryframe -row 3 -column 0 -sticky nsew -pady 5
+      grid .mdffgui.hlf.n.f5.main.unaryframe -row 4 -column 0 -sticky nsew -pady 5
       grid columnconfigure .mdffgui.hlf.n.f5.main.unaryframe 1 -weight 1
       MDFFGUI::gui::resizeToActiveTab
   }
   
-  grid $ShowMapToolsUnary -row 3 -column 0 -sticky nswe
+  grid $ShowMapToolsUnary -row 4 -column 0 -sticky nswe
   
   grid $MapToolsTrimLabel -row 0 -column 0 -sticky nswe
   grid $MapToolsTrimLabelX1 -row 0 -column 1 -sticky nswe
@@ -2361,13 +2402,20 @@ proc MDFFGUI::gui::get_psf {} {
 }
 
 proc MDFFGUI::gui::get_map {} {
-  variable CurrentPDBFile
- 
   set pathname [tk_getOpenFile -defaultextension ".mrc" -filetypes {{mrc {.mrc}} {ccp4 {.ccp4}} {situs {.sit}} {dx {.dx}} {all {*}}}]
   if {$pathname != ""} {
     if {$MDFFGUI::settings::MapToolsMolID != ""} {mol off $MDFFGUI::settings::MapToolsMolID}  
     set mapmol [mol new $pathname] 
     set MDFFGUI::settings::MapToolsMolID $mapmol
+  }
+}
+
+proc MDFFGUI::gui::get_maptools_struct {} {
+  set pathname [tk_getOpenFile -defaultextension ".pdb" -filetypes {{pdb {.pdb}} {all {*}}}]
+  if {$pathname != ""} {
+    if {$MDFFGUI::settings::MapToolsStructMolID != ""} {mol off $MDFFGUI::settings::MapToolsStructMolID}  
+    set mapstructmol [mol new $pathname] 
+    set MDFFGUI::settings::MapToolsStructMolID $mapstructmol
   }
 }
 
@@ -2393,8 +2441,20 @@ proc MDFFGUI::gui::set_mapmol_text {args} {
   }
 }
 
+proc MDFFGUI::gui::set_mapstructmol_text {args} {
+  variable MapToolsStructMolMenuText 
+  if { ! [catch { molinfo $MDFFGUI::settings::MapToolsStructMolID get name } name ] } {
+    set MapToolsStructMolMenuText "$MDFFGUI::settings::MapToolsStructMolID: $name"
+  } elseif {$MDFFGUI::settings::MapToolsStructMolID == -1} {
+    set MapToolsStructMolMenuText "none"    
+  } else {
+    set MapToolsStructMolMenuText $MDFFGUI::settings::MapToolsStructMolID    
+  }
+}
+
 proc MDFFGUI::gui::set_map_stats {args} { 
   set MDFFGUI::settings::MapToolsOrigin [voltool info origin -mol $MDFFGUI::settings::MapToolsMolID]    
+  set MDFFGUI::settings::MapToolsCOM [voltool com -mol $MDFFGUI::settings::MapToolsMolID]    
   set MDFFGUI::settings::MapToolsXsize [voltool info xsize -mol $MDFFGUI::settings::MapToolsMolID]    
   set MDFFGUI::settings::MapToolsYsize [voltool info ysize -mol $MDFFGUI::settings::MapToolsMolID]    
   set MDFFGUI::settings::MapToolsZsize [voltool info zsize -mol $MDFFGUI::settings::MapToolsMolID]    
