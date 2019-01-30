@@ -1113,7 +1113,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsMaskEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.maskentryres -textvariable MDFFGUI::settings::MaskRes -width 5]
  # set MapToolsMaskLabelCutoff [ttk::label $w.hlf.n.f5.main.structframe.masklabelcutoff -text "cutoff (A):"]
  # set MapToolsMaskEntryCutoff [ttk::entry $w.hlf.n.f5.main.structframe.maskentrycutoff -textvariable MDFFGUI::settings::MaskCutoff -width 5]
-  set MapToolsMaskButton [ttk::button $w.hlf.n.f5.main.structframe.maskbutton -text "Mask" -command { voltool mask [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::MaskSel] -res $MDFFGUI::settings::MaskRes -cutoff $MDFFGUI::settings::MaskRes -mol $MDFFGUI::settings::MapToolsMolID } ]
+  set MapToolsMaskButton [ttk::button $w.hlf.n.f5.main.structframe.maskbutton -text "Mask" -command { voltool mask [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::MaskSel] -res $MDFFGUI::settings::MaskRes -cutoff $MDFFGUI::settings::MaskRes -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
  
   #Sim
   set MapToolsSimLabel [ttk::label $w.hlf.n.f5.main.structframe.simlabel -text "Simulated Density:"]
@@ -1121,7 +1121,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsSimEntrySel [ttk::entry $w.hlf.n.f5.main.structframe.simentrysel -textvariable MDFFGUI::settings::SimSel -width 20]
   set MapToolsSimLabelRes [ttk::label $w.hlf.n.f5.main.structframe.simlabelres -text "map resolution (A):"]
   set MapToolsSimEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.simentryres -textvariable MDFFGUI::settings::SimRes -width 5]
-  set MapToolsSimButton [ttk::button $w.hlf.n.f5.main.structframe.simbutton -text "Generate" -command { voltool sim [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::SimSel] -res $MDFFGUI::settings::SimRes  -mol $MDFFGUI::settings::MapToolsMolID } ]
+  set MapToolsSimButton [ttk::button $w.hlf.n.f5.main.structframe.simbutton -text "Generate" -command { voltool sim [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::SimSel] -res $MDFFGUI::settings::SimRes -o [MDFFGUI::gui::save_map] } ]
  
   set ShowMapToolsStruct [ttk::label $w.hlf.n.f5.main.showstruct -text "$rightPoint Structure Ops..." -anchor w]
   set HideMapToolsStruct [ttk::label $w.hlf.n.f5.main.structframe.hidestruct -text "$downPoint Structure Ops" -anchor w]
@@ -1182,7 +1182,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsTrimEntryZ1 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryz1 -textvariable MDFFGUI::settings::TrimZ1 -width 5]
   set MapToolsTrimLabelZ2 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelz2 -text "+z:"]
   set MapToolsTrimEntryZ2 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryz2 -textvariable MDFFGUI::settings::TrimZ2 -width 5]
-  set MapToolsTrimButton [ttk::button $w.hlf.n.f5.main.unaryframe.trimbutton -text "Trim" -command { voltool trim -amt "$MDFFGUI::settings::TrimX1 $MDFFGUI::settings::TrimX2 $MDFFGUI::settings::TrimY1 $MDFFGUI::settings::TrimY2 $MDFFGUI::settings::TrimZ1 $MDFFGUI::settings::TrimZ2" -mol $MDFFGUI::settings::MapToolsMolID } ]
+  set MapToolsTrimButton [ttk::button $w.hlf.n.f5.main.unaryframe.trimbutton -text "Trim" -command { voltool trim -amt "$MDFFGUI::settings::TrimX1 $MDFFGUI::settings::TrimX2 $MDFFGUI::settings::TrimY1 $MDFFGUI::settings::TrimY2 $MDFFGUI::settings::TrimZ1 $MDFFGUI::settings::TrimZ2" -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
   
   set MapToolsCropLabel [ttk::label $w.hlf.n.f5.main.unaryframe.croplabel -text "Crop map in coordinate space:"]
   set MapToolsCropLabelX1 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabelx1 -text "minx:"]
@@ -1197,7 +1197,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsCropEntryZ1 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryz1 -textvariable MDFFGUI::settings::CropZ1 -width 5]
   set MapToolsCropLabelZ2 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabelz2 -text "maxz:"]
   set MapToolsCropEntryZ2 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryz2 -textvariable MDFFGUI::settings::CropZ2 -width 5]
-  set MapToolsCropButton [ttk::button $w.hlf.n.f5.main.unaryframe.cropbutton -text "Crop" -command { voltool crop -amt "$MDFFGUI::settings::CropX1 $MDFFGUI::settings::CropY1 $MDFFGUI::settings::CropZ1 $MDFFGUI::settings::CropX2 $MDFFGUI::settings::CropY2 $MDFFGUI::settings::CropZ2" -mol $MDFFGUI::settings::MapToolsMolID } ]
+  set MapToolsCropButton [ttk::button $w.hlf.n.f5.main.unaryframe.cropbutton -text "Crop" -command { voltool crop -amt "$MDFFGUI::settings::CropX1 $MDFFGUI::settings::CropY1 $MDFFGUI::settings::CropZ1 $MDFFGUI::settings::CropX2 $MDFFGUI::settings::CropY2 $MDFFGUI::settings::CropZ2" -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
   
   set ShowMapToolsUnary [ttk::label $w.hlf.n.f5.main.showunary -text "$rightPoint Single Map Ops..." -anchor w]
   set HideMapToolsUnary [ttk::label $w.hlf.n.f5.main.unaryframe.hideunary -text "$downPoint Single Map Ops" -anchor w]
@@ -1492,6 +1492,11 @@ proc MDFFGUI::gui::save_density_list {} {
     lappend MDFFGUI::settings::xMDFFBSharpFactorList [lindex $vals 8]
   }
   
+
+}
+
+proc MDFFGUI::gui::save_map {} {
+  return [tk_getSaveFile -defaultextension ".dx" -filetypes {{dx {.dx}} } -parent $MDFFGUI::gui::w -initialdir $MDFFGUI::settings::CurrentDir]
 
 }
 
