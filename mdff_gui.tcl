@@ -181,6 +181,8 @@ namespace eval MDFFGUI:: {
     variable MaskSel "all"
     variable MaskRes ""
     variable MaskCutoff ""
+    variable SimSel "noh"
+    variable SimRes ""
     
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
@@ -1088,7 +1090,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set CurrentMapToolsStructMolMenu [menu $w.hlf.n.f5.main.structframe.molmenubutton.molmenu -tearoff no]
   
   #set_mol_text 
-  fill_mapmol_menu $CurrentMapToolsStructMolMenu
+  fill_mapstructmol_menu $CurrentMapToolsStructMolMenu
   trace add variable ::vmd_molecule write "MDFFGUI::gui::fill_mapstructmol_menu $CurrentMapToolsStructMolMenu"
   trace add variable MDFFGUI::settings::MapToolsStructMolID write MDFFGUI::gui::set_mapstructmol_text
   set MDFFGUI::settings::MapToolsStructMolID $nullMolString
@@ -1113,6 +1115,13 @@ proc MDFFGUI::gui::mdffgui {} {
  # set MapToolsMaskEntryCutoff [ttk::entry $w.hlf.n.f5.main.structframe.maskentrycutoff -textvariable MDFFGUI::settings::MaskCutoff -width 5]
   set MapToolsMaskButton [ttk::button $w.hlf.n.f5.main.structframe.maskbutton -text "Mask" -command { voltool mask [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::MaskSel] -res $MDFFGUI::settings::MaskRes -cutoff $MDFFGUI::settings::MaskRes -mol $MDFFGUI::settings::MapToolsMolID } ]
  
+  #Sim
+  set MapToolsSimLabel [ttk::label $w.hlf.n.f5.main.structframe.simlabel -text "Simulated Density:"]
+  set MapToolsSimLabelSel [ttk::label $w.hlf.n.f5.main.structframe.simlabelsel -text "atom selection:"]
+  set MapToolsSimEntrySel [ttk::entry $w.hlf.n.f5.main.structframe.simentrysel -textvariable MDFFGUI::settings::SimSel -width 20]
+  set MapToolsSimLabelRes [ttk::label $w.hlf.n.f5.main.structframe.simlabelres -text "map resolution (A):"]
+  set MapToolsSimEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.simentryres -textvariable MDFFGUI::settings::SimRes -width 5]
+  set MapToolsSimButton [ttk::button $w.hlf.n.f5.main.structframe.simbutton -text "Generate" -command { voltool sim [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::SimSel] -res $MDFFGUI::settings::SimRes  -mol $MDFFGUI::settings::MapToolsMolID } ]
  
   set ShowMapToolsStruct [ttk::label $w.hlf.n.f5.main.showstruct -text "$rightPoint Structure Ops..." -anchor w]
   set HideMapToolsStruct [ttk::label $w.hlf.n.f5.main.structframe.hidestruct -text "$downPoint Structure Ops" -anchor w]
@@ -1149,6 +1158,13 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsMaskLabelRes -row 2 -column 3 -sticky nswe
   grid $MapToolsMaskEntryRes -row 2 -column 4 -sticky nswe
   grid $MapToolsMaskButton -row 2 -column 5 -sticky nswe
+  
+  grid $MapToolsSimLabel -row 3 -column 0 -sticky nswe
+  grid $MapToolsSimLabelSel -row 3 -column 1 -sticky nswe
+  grid $MapToolsSimEntrySel -row 3 -column 2 -sticky nswe
+  grid $MapToolsSimLabelRes -row 3 -column 3 -sticky nswe
+  grid $MapToolsSimEntryRes -row 3 -column 4 -sticky nswe
+  grid $MapToolsSimButton -row 3 -column 5 -sticky nswe
   
   #unary ops
   set MapToolsUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw]
@@ -2472,7 +2488,7 @@ proc MDFFGUI::gui::set_mol_text {args} {
 }
 
 proc MDFFGUI::gui::set_mapmol_text {args} {
-  variable MapToolsMolMenuText 
+  variable MapToolsMolMenuText
   if { ! [catch { molinfo $MDFFGUI::settings::MapToolsMolID get name } name ] } {
     set MapToolsMolMenuText "$MDFFGUI::settings::MapToolsMolID: $name"
   } elseif {$MDFFGUI::settings::MapToolsMolID == -1} {
@@ -2547,6 +2563,28 @@ proc MDFFGUI::gui::fill_mapmol_menu {args} {
     if {[lsearch -exact $molList [molinfo top]] != -1} {
       set MDFFGUI::settings::MapToolsMolID [molinfo top]
     } else { set MDFFGUI::settings::MapToolsMolID $nullMolString }
+  }
+}
+
+proc MDFFGUI::gui::fill_mapstructmol_menu {args} {
+  variable nullMolString
+  set name [lindex $args 0]
+  $name delete 0 end
+
+  set molList {}
+  foreach mm [array names ::vmd_initialize_structure] {
+    if { $::vmd_initialize_structure($mm) != 0} {
+      lappend molList $mm
+      $name add radiobutton -variable MDFFGUI::settings::MapToolsStructMolID \
+      -value $mm -label "$mm [molinfo $mm get name]" \
+    }
+  }
+
+  #set if any non-Graphics molecule is loaded
+  if {[lsearch -exact $molList $MDFFGUI::settings::MapToolsStructMolID] == -1} {
+    if {[lsearch -exact $molList [molinfo top]] != -1} {
+      set MDFFGUI::settings::MolID [molinfo top]
+    } else { set MDFFGUI::settings::MapToolsStructMolID $nullMolString }
   }
 }
 
