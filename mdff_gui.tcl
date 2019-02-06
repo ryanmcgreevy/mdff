@@ -84,6 +84,7 @@ namespace eval MDFFGUI:: {
 
     variable MapToolsMolMenuText
     variable MapToolsStructMolMenuText
+    variable CCOutput ""
     #variable HistPlot
   }
   namespace eval settings:: {
@@ -183,6 +184,8 @@ namespace eval MDFFGUI:: {
     variable MaskCutoff ""
     variable SimSel "noh"
     variable SimRes ""
+    variable CCSel "noh"
+    variable CCRes ""
     
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
@@ -1122,7 +1125,17 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsSimLabelRes [ttk::label $w.hlf.n.f5.main.structframe.simlabelres -text "map resolution (A):"]
   set MapToolsSimEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.simentryres -textvariable MDFFGUI::settings::SimRes -width 5]
   set MapToolsSimButton [ttk::button $w.hlf.n.f5.main.structframe.simbutton -text "Generate" -command { voltool sim [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::SimSel] -res $MDFFGUI::settings::SimRes -o [MDFFGUI::gui::save_map] } ]
- 
+  
+  #CC
+  set MapToolsCCLabel [ttk::label $w.hlf.n.f5.main.structframe.cclabel -text "Cross Correlation:"]
+  set MapToolsCCLabelSel [ttk::label $w.hlf.n.f5.main.structframe.cclabelsel -text "atom selection:"]
+  set MapToolsCCEntrySel [ttk::entry $w.hlf.n.f5.main.structframe.ccentrysel -textvariable MDFFGUI::settings::CCSel -width 20]
+  set MapToolsCCLabelRes [ttk::label $w.hlf.n.f5.main.structframe.cclabelres -text "map resolution (A):"]
+  set MapToolsCCEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.ccentryres -textvariable MDFFGUI::settings::CCRes -width 5]
+  set MapToolsCCButton [ttk::button $w.hlf.n.f5.main.structframe.ccbutton -text "Generate" -command { set MDFFGUI::gui::CCOutput [voltool cc [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::CCSel] -res $MDFFGUI::settings::CCRes -mol $MDFFGUI::settings::MapToolsMolID] } ]
+  set MapToolsCCLabelOutput [ttk::label $w.hlf.n.f5.main.structframe.cclabelout -text "CC:"]
+  set MapToolsCCOutput [ttk::label $w.hlf.n.f5.main.structframe.ccout -textvariable MDFFGUI::gui::CCOutput -width 10]
+  
   set ShowMapToolsStruct [ttk::label $w.hlf.n.f5.main.showstruct -text "$rightPoint Structure Ops..." -anchor w]
   set HideMapToolsStruct [ttk::label $w.hlf.n.f5.main.structframe.hidestruct -text "$downPoint Structure Ops" -anchor w]
 
@@ -1165,6 +1178,15 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsSimLabelRes -row 3 -column 3 -sticky nswe
   grid $MapToolsSimEntryRes -row 3 -column 4 -sticky nswe
   grid $MapToolsSimButton -row 3 -column 5 -sticky nswe
+  
+  grid $MapToolsCCLabel -row 4 -column 0 -sticky nswe
+  grid $MapToolsCCLabelSel -row 4 -column 1 -sticky nswe
+  grid $MapToolsCCEntrySel -row 4 -column 2 -sticky nswe
+  grid $MapToolsCCLabelRes -row 4 -column 3 -sticky nswe
+  grid $MapToolsCCEntryRes -row 4 -column 4 -sticky nswe
+  grid $MapToolsCCButton -row 4 -column 5 -sticky nswe
+  grid $MapToolsCCLabelOutput -row 4 -column 6 -sticky nswe
+  grid $MapToolsCCOutput -row 4 -column 7 -sticky nsw
   
   #unary ops
   set MapToolsUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw]
