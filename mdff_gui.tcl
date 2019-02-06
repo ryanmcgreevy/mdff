@@ -186,7 +186,9 @@ namespace eval MDFFGUI:: {
     variable SimRes ""
     variable CCSel "noh"
     variable CCRes ""
-    
+    variable ClampMin 0
+    variable ClampMax 0
+     
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
   [file join $env(CHARMMPARDIR) par_all36_na.prm] [file join $env(CHARMMPARDIR) par_all36_carb.prm] \
@@ -1221,6 +1223,14 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsCropEntryZ2 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryz2 -textvariable MDFFGUI::settings::CropZ2 -width 5]
   set MapToolsCropButton [ttk::button $w.hlf.n.f5.main.unaryframe.cropbutton -text "Crop" -command { voltool crop -amt "$MDFFGUI::settings::CropX1 $MDFFGUI::settings::CropY1 $MDFFGUI::settings::CropZ1 $MDFFGUI::settings::CropX2 $MDFFGUI::settings::CropY2 $MDFFGUI::settings::CropZ2" -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
   
+  #Clamp
+  set MapToolsClampLabel [ttk::label $w.hlf.n.f5.main.unaryframe.clamplabel -text "Clamp map to range:"]
+  set MapToolsClampLabelMin [ttk::label $w.hlf.n.f5.main.unaryframe.clamplabelmin -text "min:"]
+  set MapToolsClampEntryMin [ttk::entry $w.hlf.n.f5.main.unaryframe.clampentrymin -textvariable MDFFGUI::settings::ClampMin -width 5]
+  set MapToolsClampLabelMax [ttk::label $w.hlf.n.f5.main.unaryframe.clamplabelmax -text "max:"]
+  set MapToolsClampEntryMax [ttk::entry $w.hlf.n.f5.main.unaryframe.clampentrymax -textvariable MDFFGUI::settings::ClampMax -width 5]
+  set MapToolsClampButton [ttk::button $w.hlf.n.f5.main.unaryframe.clampbutton -text "Clamp" -command { voltool clamp -min $MDFFGUI::settings::ClampMin -max $MDFFGUI::settings::ClampMax -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+  
   set ShowMapToolsUnary [ttk::label $w.hlf.n.f5.main.showunary -text "$rightPoint Single Map Ops..." -anchor w]
   set HideMapToolsUnary [ttk::label $w.hlf.n.f5.main.unaryframe.hideunary -text "$downPoint Single Map Ops" -anchor w]
 
@@ -1268,6 +1278,13 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsCropLabelZ2 -row 1 -column 11 -sticky nswe
   grid $MapToolsCropEntryZ2 -row 1 -column 12 -sticky nswe
   grid $MapToolsCropButton -row 1 -column 13 -sticky nsw
+  
+  grid $MapToolsClampLabel -row 2 -column 0 -sticky nswe
+  grid $MapToolsClampLabelMin -row 2 -column 1 -sticky nswe
+  grid $MapToolsClampEntryMin -row 2 -column 2 -sticky nswe
+  grid $MapToolsClampLabelMax -row 2 -column 3 -sticky nswe
+  grid $MapToolsClampEntryMax -row 2 -column 4 -sticky nswe
+  grid $MapToolsClampButton -row 2 -column 5 -sticky nsw
 
 
   #Basic MDFF analysis
@@ -2546,6 +2563,9 @@ proc MDFFGUI::gui::set_map_stats {args} {
   set minmax [voltool info minmax -mol $MDFFGUI::settings::MapToolsMolID]    
   set MDFFGUI::settings::MapToolsMin [lindex $minmax 0]    
   set MDFFGUI::settings::MapToolsMax [lindex $minmax 1]    
+  #For clamping command, set defaults to actual range
+  set MDFFGUI::settings::ClampMin [lindex $minmax 0]    
+  set MDFFGUI::settings::ClampMax [lindex $minmax 1]    
 
 }
 
