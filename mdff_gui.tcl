@@ -188,6 +188,13 @@ namespace eval MDFFGUI:: {
     variable CCRes ""
     variable ClampMin 0
     variable ClampMax 0
+    variable SmultAmt 1
+    variable SAddAmt 0
+    variable RangeMin 0
+    variable RangeMax 0
+    variable BinmaskAmt 0
+    variable SmoothAmt 0
+    variable PotAmt 0
      
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
@@ -1231,6 +1238,56 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsClampEntryMax [ttk::entry $w.hlf.n.f5.main.unaryframe.clampentrymax -textvariable MDFFGUI::settings::ClampMax -width 5]
   set MapToolsClampButton [ttk::button $w.hlf.n.f5.main.unaryframe.clampbutton -text "Clamp" -command { voltool clamp -min $MDFFGUI::settings::ClampMin -max $MDFFGUI::settings::ClampMax -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
   
+  #Smult
+  set MapToolsSmultLabel [ttk::label $w.hlf.n.f5.main.unaryframe.smultlabel -text "Multiply by scalar:"]
+  set MapToolsSmultLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.smultlabelamt -text "Amount:"]
+  set MapToolsSmultEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.smultentryamt -textvariable MDFFGUI::settings::SmultAmt -width 5]
+  set MapToolsSmultButton [ttk::button $w.hlf.n.f5.main.unaryframe.smultbutton -text "Mult" -command { voltool smult -amt $MDFFGUI::settings::SmultAmt -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+  
+  #SAdd
+  set MapToolsSAddLabel [ttk::label $w.hlf.n.f5.main.unaryframe.saddlabel -text "Add scalar:"]
+  set MapToolsSAddLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.saddlabelamt -text "Amount:"]
+  set MapToolsSAddEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.saddentryamt -textvariable MDFFGUI::settings::SAddAmt -width 5]
+  set MapToolsSAddButton [ttk::button $w.hlf.n.f5.main.unaryframe.saddbutton -text "Add" -command { voltool sadd -amt $MDFFGUI::settings::SAddAmt -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+  
+  #Range
+  set MapToolsRangeLabel [ttk::label $w.hlf.n.f5.main.unaryframe.rangelabel -text "Fit values to range:"]
+  set MapToolsRangeLabelMin [ttk::label $w.hlf.n.f5.main.unaryframe.rangelabelmin -text "min:"]
+  set MapToolsRangeEntryMin [ttk::entry $w.hlf.n.f5.main.unaryframe.rangeentrymin -textvariable MDFFGUI::settings::RangeMin -width 5]
+  set MapToolsRangeLabelMax [ttk::label $w.hlf.n.f5.main.unaryframe.rangelabelmax -text "max:"]
+  set MapToolsRangeEntryMax [ttk::entry $w.hlf.n.f5.main.unaryframe.rangeentrymax -textvariable MDFFGUI::settings::RangeMax -width 5]
+  set MapToolsRangeButton [ttk::button $w.hlf.n.f5.main.unaryframe.rangebutton -text "Fit" -command { voltool range -minmax "$MDFFGUI::settings::RangeMin $MDFFGUI::settings::RangeMax" -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+
+  #Binmask
+  set MapToolsBinmaskLabel [ttk::label $w.hlf.n.f5.main.unaryframe.binmasklabel -text "Binary Mask:"]
+  set MapToolsBinmaskLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.binmasklabelamt -text "Threshold:"]
+  set MapToolsBinmaskEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.binmaskentryamt -textvariable MDFFGUI::settings::BinmaskAmt -width 5]
+  set MapToolsBinmaskButton [ttk::button $w.hlf.n.f5.main.unaryframe.binmaskbutton -text "Mask" -command { voltool binmask -threshold $MDFFGUI::settings::BinmaskAmt -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+  
+  #Smooth
+  set MapToolsSmoothLabel [ttk::label $w.hlf.n.f5.main.unaryframe.smoothlabel -text "Guassian Blur:"]
+  set MapToolsSmoothLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.smoothlabelamt -text "Sigma:"]
+  set MapToolsSmoothEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.smoothentryamt -textvariable MDFFGUI::settings::SmoothAmt -width 5]
+  set MapToolsSmoothButton [ttk::button $w.hlf.n.f5.main.unaryframe.smoothbutton -text "Smooth" -command { voltool smooth -sigma $MDFFGUI::settings::SmoothAmt -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+  
+  #Pot
+  set MapToolsPotLabel [ttk::label $w.hlf.n.f5.main.unaryframe.potlabel -text "MDFF Potential:"]
+  set MapToolsPotLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.potlabelamt -text "Threshold:"]
+  set MapToolsPotEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.potentryamt -textvariable MDFFGUI::settings::PotAmt -width 5]
+  set MapToolsPotButton [ttk::button $w.hlf.n.f5.main.unaryframe.potbutton -text "Convert" -command { voltool pot -threshold $MDFFGUI::settings::PotAmt -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+  
+  #Downsample
+  set MapToolsDownsampleLabel [ttk::label $w.hlf.n.f5.main.unaryframe.downsamplelabel -text "Downsample by x2:"]
+  set MapToolsDownsampleButton [ttk::button $w.hlf.n.f5.main.unaryframe.downsamplebutton -text "Downsample" -command { voltool downsample -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+  
+  #Supersample
+  set MapToolsSupersampleLabel [ttk::label $w.hlf.n.f5.main.unaryframe.supersamplelabel -text "Supersample by x2:"]
+  set MapToolsSupersampleButton [ttk::button $w.hlf.n.f5.main.unaryframe.supersamplebutton -text "Supersample" -command { voltool supersample -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+  
+  #Sigma
+  set MapToolsSigmaLabel [ttk::label $w.hlf.n.f5.main.unaryframe.sigmalabel -text "Convert to Sigma Scale:"]
+  set MapToolsSigmaButton [ttk::button $w.hlf.n.f5.main.unaryframe.sigmabutton -text "Convert" -command { voltool sigma -mol $MDFFGUI::settings::MapToolsMolID -o [MDFFGUI::gui::save_map] } ]
+  
   set ShowMapToolsUnary [ttk::label $w.hlf.n.f5.main.showunary -text "$rightPoint Single Map Ops..." -anchor w]
   set HideMapToolsUnary [ttk::label $w.hlf.n.f5.main.unaryframe.hideunary -text "$downPoint Single Map Ops" -anchor w]
 
@@ -1285,8 +1342,48 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsClampLabelMax -row 2 -column 3 -sticky nswe
   grid $MapToolsClampEntryMax -row 2 -column 4 -sticky nswe
   grid $MapToolsClampButton -row 2 -column 5 -sticky nsw
+  
+  grid $MapToolsSmultLabel -row 3 -column 0 -sticky nswe
+  grid $MapToolsSmultLabelAmt -row 3 -column 1 -sticky nswe
+  grid $MapToolsSmultEntryAmt -row 3 -column 2 -sticky nswe
+  grid $MapToolsSmultButton -row 3 -column 3 -sticky nsw
+  
+  grid $MapToolsSAddLabel -row 4 -column 0 -sticky nswe
+  grid $MapToolsSAddLabelAmt -row 4 -column 1 -sticky nswe
+  grid $MapToolsSAddEntryAmt -row 4 -column 2 -sticky nswe
+  grid $MapToolsSAddButton -row 4 -column 3 -sticky nsw
+  
+  grid $MapToolsRangeLabel -row 5 -column 0 -sticky nswe
+  grid $MapToolsRangeLabelMin -row 5 -column 1 -sticky nswe
+  grid $MapToolsRangeEntryMin -row 5 -column 2 -sticky nswe
+  grid $MapToolsRangeLabelMax -row 5 -column 3 -sticky nswe
+  grid $MapToolsRangeEntryMax -row 5 -column 4 -sticky nswe
+  grid $MapToolsRangeButton -row 5 -column 5 -sticky nsw
+  
+  grid $MapToolsBinmaskLabel -row 6 -column 0 -sticky nswe
+  grid $MapToolsBinmaskLabelAmt -row 6 -column 1 -sticky nswe
+  grid $MapToolsBinmaskEntryAmt -row 6 -column 2 -sticky nswe
+  grid $MapToolsBinmaskButton -row 6 -column 3 -sticky nsw
+  
+  grid $MapToolsSmoothLabel -row 7 -column 0 -sticky nswe
+  grid $MapToolsSmoothLabelAmt -row 7 -column 1 -sticky nswe
+  grid $MapToolsSmoothEntryAmt -row 7 -column 2 -sticky nswe
+  grid $MapToolsSmoothButton -row 7 -column 3 -sticky nsw
+  
+  grid $MapToolsPotLabel -row 8 -column 0 -sticky nswe
+  grid $MapToolsPotLabelAmt -row 8 -column 1 -sticky nswe
+  grid $MapToolsPotEntryAmt -row 8 -column 2 -sticky nswe
+  grid $MapToolsPotButton -row 8 -column 3 -sticky nsw
+  
+  grid $MapToolsDownsampleLabel -row 9 -column 0 -sticky nswe
+  grid $MapToolsDownsampleButton -row 9 -column 1 -sticky nsw
 
-
+  grid $MapToolsSupersampleLabel -row 10 -column 0 -sticky nswe
+  grid $MapToolsSupersampleButton -row 10 -column 1 -sticky nsw
+ 
+  grid $MapToolsSigmaLabel -row 11 -column 0 -sticky nswe
+  grid $MapToolsSigmaButton -row 11 -column 1 -sticky nsw
+  
   #Basic MDFF analysis
   #set NBTab6 [ttk::frame $w.hlf.n.f6];
   #$Notebook add $NBTab6 -text "Analysis" 
@@ -2566,6 +2663,9 @@ proc MDFFGUI::gui::set_map_stats {args} {
   #For clamping command, set defaults to actual range
   set MDFFGUI::settings::ClampMin [lindex $minmax 0]    
   set MDFFGUI::settings::ClampMax [lindex $minmax 1]    
+  #For range command, set defaults to actual range
+  set MDFFGUI::settings::RangeMin [lindex $minmax 0]    
+  set MDFFGUI::settings::RangeMax [lindex $minmax 1]    
 
 }
 
