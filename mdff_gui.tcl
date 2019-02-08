@@ -1384,6 +1384,27 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsSigmaLabel -row 11 -column 0 -sticky nswe
   grid $MapToolsSigmaButton -row 11 -column 1 -sticky nsw
   
+  #Binary Ops
+  set MapToolsBinaryFrame [ttk::labelframe $w.hlf.n.f5.main.binaryframe -labelanchor nw]
+  
+  set ShowMapToolsBinary [ttk::label $w.hlf.n.f5.main.showbinary -text "$rightPoint Multiple Maps Ops..." -anchor w]
+  set HideMapToolsBinary [ttk::label $w.hlf.n.f5.main.binaryframe.hidebinary -text "$downPoint Multiple Maps Ops" -anchor w]
+
+  $MapToolsBinaryFrame configure -labelwidget $HideMapToolsBinary
+  bind $HideMapToolsBinary <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.binaryframe
+      grid .mdffgui.hlf.n.f5.main.showbinary
+      MDFFGUI::gui::resizeToActiveTab
+  }
+  bind $ShowMapToolsBinary <Button-1> {
+      grid remove .mdffgui.hlf.n.f5.main.showbinary
+      grid .mdffgui.hlf.n.f5.main.binaryframe -row 5 -column 0 -sticky nsew -pady 5
+      grid columnconfigure .mdffgui.hlf.n.f5.main.binaryframe 1 -weight 1
+      MDFFGUI::gui::resizeToActiveTab
+  }
+  
+  grid $ShowMapToolsBinary -row 5 -column 0 -sticky nswe
+  
   #Basic MDFF analysis
   #set NBTab6 [ttk::frame $w.hlf.n.f6];
   #$Notebook add $NBTab6 -text "Analysis" 
