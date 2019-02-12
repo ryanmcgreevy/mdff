@@ -85,6 +85,7 @@ namespace eval MDFFGUI:: {
     variable MapToolsMolMenuText
     variable MapToolsStructMolMenuText
     variable CCOutput ""
+    variable MapToolsMol2MenuText
     #variable HistPlot
   }
   namespace eval settings:: {
@@ -195,6 +196,7 @@ namespace eval MDFFGUI:: {
     variable BinmaskAmt 0
     variable SmoothAmt 0
     variable PotAmt 0
+    variable MapToolsMol2ID ""
      
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
@@ -1387,6 +1389,18 @@ proc MDFFGUI::gui::mdffgui {} {
   #Binary Ops
   set MapToolsBinaryFrame [ttk::labelframe $w.hlf.n.f5.main.binaryframe -labelanchor nw]
   
+  set MapToolsMol2 [ttk::label $w.hlf.n.f5.main.binaryframe.mol2label -text "Mol2 ID (Density Map):"]
+  set MapToolsMol2MenuButton [ttk::menubutton $w.hlf.n.f5.main.binaryframe.mol2menubutton -textvar MDFFGUI::gui::MapToolsMol2MenuText -menu $w.hlf.n.f5.main.binaryframe.mol2menubutton.mol2menu]
+  set CurrentMapToolsMol2Menu [menu $w.hlf.n.f5.main.binaryframe.mol2menubutton.mol2menu -tearoff no]
+  
+  #set_mol_text 
+  fill_mapmol2_menu $CurrentMapToolsMol2Menu
+  trace add variable ::vmd_molecule write "MDFFGUI::gui::fill_mapmol2_menu $CurrentMapToolsMol2Menu"
+  trace add variable MDFFGUI::settings::MapToolsMol2ID write MDFFGUI::gui::set_mapmol2_text
+  set MDFFGUI::settings::MapToolsMol2ID $nullMolString
+  
+  set MapToolsSelectMap2 [ttk::button $w.hlf.n.f5.main.binaryframe.mapbutton -text "Browse" -command {MDFFGUI::gui::get_map2} ]
+  
   set ShowMapToolsBinary [ttk::label $w.hlf.n.f5.main.showbinary -text "$rightPoint Multiple Maps Ops..." -anchor w]
   set HideMapToolsBinary [ttk::label $w.hlf.n.f5.main.binaryframe.hidebinary -text "$downPoint Multiple Maps Ops" -anchor w]
 
@@ -1404,7 +1418,11 @@ proc MDFFGUI::gui::mdffgui {} {
   }
   
   grid $ShowMapToolsBinary -row 5 -column 0 -sticky nswe
-  
+ 
+   
+  grid $MapToolsMol2 -row 0 -column 0 -sticky nswe
+  grid $MapToolsMol2MenuButton -row 0 -column 1 -sticky nswe
+  grid $MapToolsSelectMap2 -row 0 -column 2 -sticky nswe
   #Basic MDFF analysis
   #set NBTab6 [ttk::frame $w.hlf.n.f6];
   #$Notebook add $NBTab6 -text "Analysis" 
@@ -2629,6 +2647,15 @@ proc MDFFGUI::gui::get_map {} {
   }
 }
 
+proc MDFFGUI::gui::get_map2 {} {
+  set pathname [tk_getOpenFile -defaultextension ".mrc" -filetypes {{mrc {.mrc}} {ccp4 {.ccp4}} {situs {.sit}} {dx {.dx}} {all {*}}}]
+  if {$pathname != ""} {
+    if {$MDFFGUI::settings::MapToolsMol2ID != ""} {mol off $MDFFGUI::settings::MapToolsMol2ID}  
+    set mapmol [mol new $pathname] 
+    set MDFFGUI::settings::MapToolsMol2ID $mapmol
+  }
+}
+
 proc MDFFGUI::gui::get_maptools_struct {} {
   set pathname [tk_getOpenFile -defaultextension ".pdb" -filetypes {{pdb {.pdb}} {all {*}}}]
   if {$pathname != ""} {
@@ -2657,6 +2684,17 @@ proc MDFFGUI::gui::set_mapmol_text {args} {
     set MapToolsMolMenuText "none"    
   } else {
     set MapToolsMolMenuText $MDFFGUI::settings::MapToolsMolID    
+  }
+}
+
+proc MDFFGUI::gui::set_mapmol2_text {args} {
+  variable MapToolsMol2MenuText
+  if { ! [catch { molinfo $MDFFGUI::settings::MapToolsMol2ID get name } name ] } {
+    set MapToolsMol2MenuText "$MDFFGUI::settings::MapToolsMol2ID: $name"
+  } elseif {$MDFFGUI::settings::MapToolsMol2ID == -1} {
+    set MapToolsMol2MenuText "none"    
+  } else {
+    set MapToolsMol2MenuText $MDFFGUI::settings::MapToolsMol2ID    
   }
 }
 
@@ -2731,6 +2769,28 @@ proc MDFFGUI::gui::fill_mapmol_menu {args} {
     if {[lsearch -exact $molList [molinfo top]] != -1} {
       set MDFFGUI::settings::MapToolsMolID [molinfo top]
     } else { set MDFFGUI::settings::MapToolsMolID $nullMolString }
+  }
+}
+
+proc MDFFGUI::gui::fill_mapmol2_menu {args} {
+  variable nullMolString
+  set name [lindex $args 0]
+  $name delete 0 end
+
+  set molList {}
+  foreach mm [array names ::vmd_molecule] {
+    if { $::vmd_molecule($mm) != 0} {
+      lappend molList $mm
+      $name add radiobutton -variable MDFFGUI::settings::MapToolsMol2ID \
+      -value $mm -label "$mm [molinfo $mm get name]" \
+    }
+  }
+
+  #set if any non-Graphics molecule is loaded
+  if {[lsearch -exact $molList $MDFFGUI::settings::MapToolsMol2ID] == -1} {
+    if {[lsearch -exact $molList [molinfo top]] != -1} {
+      set MDFFGUI::settings::MapToolsMol2ID [molinfo top]
+    } else { set MDFFGUI::settings::MapToolsMol2ID $nullMolString }
   }
 }
 
