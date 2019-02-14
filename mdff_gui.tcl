@@ -988,7 +988,7 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsFrame -row 0 -column 0 -sticky nsew
   
   set MapToolsFileFrame [ttk::frame $w.hlf.n.f5.main.fileframe]
-  grid columnconfigure $MapToolsFileFrame 1 -weight 1 
+  #grid columnconfigure $MapToolsFileFrame 1 -weight 1 
  #Following is for using already loaded volumes
   set MapToolsMol [ttk::label $w.hlf.n.f5.main.fileframe.mollabel -text "Mol ID (Density Map):"]
   set MapToolsMolMenuButton [ttk::menubutton $w.hlf.n.f5.main.fileframe.molmenubutton -textvar MDFFGUI::gui::MapToolsMolMenuText -menu $w.hlf.n.f5.main.fileframe.molmenubutton.molmenu]
@@ -1003,13 +1003,13 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsSelectMap [ttk::button $w.hlf.n.f5.main.fileframe.mapbutton -text "Browse" -command {MDFFGUI::gui::get_map} ]
  
  
-  grid $MapToolsFileFrame -row 0 -column 0 -sticky nsew
+  grid $MapToolsFileFrame -row 0 -column 0 -sticky nsw -columnspan 10
   grid $MapToolsMol -row 0 -column 0 -sticky nsw
   grid $MapToolsMolMenuButton   -row 0 -column 1 -sticky nsw
   grid $MapToolsSelectMap   -row 0 -column 2 -sticky nsw
   
   set MapToolsInfoFrame [ttk::labelframe $w.hlf.n.f5.main.infoframe -labelanchor nw]
-  grid columnconfigure $MapToolsInfoFrame 1 -weight 1
+  #grid columnconfigure $MapToolsInfoFrame 1 -weight 1
   set MapToolsMapOriginLabel [ttk::label $w.hlf.n.f5.main.infoframe.originlabel -text "Origin: "]
   set MapToolsMapOriginLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.originlabeldisp -textvar MDFFGUI::settings::MapToolsOrigin]
   set MapToolsMapCOMLabel [ttk::label $w.hlf.n.f5.main.infoframe.comlabel -text "Center of Mass: "]
@@ -1037,8 +1037,8 @@ proc MDFFGUI::gui::mdffgui {} {
   }
   bind $ShowMapToolsInfo <Button-1> {
       grid remove .mdffgui.hlf.n.f5.main.showinfo
-      grid .mdffgui.hlf.n.f5.main.infoframe -row 1 -column 0 -sticky nsew -pady 5
-      grid columnconfigure .mdffgui.hlf.n.f5.main.infoframe 1 -weight 1
+      grid .mdffgui.hlf.n.f5.main.infoframe -row 1 -column 0 -sticky nsw -pady 5 -columnspan 10
+#      grid columnconfigure .mdffgui.hlf.n.f5.main.infoframe 1 -weight 1
       MDFFGUI::gui::resizeToActiveTab
   }
   
@@ -1047,21 +1047,21 @@ proc MDFFGUI::gui::mdffgui {} {
   #grid $MapToolsInfoFrame -row 1 -column 0 -sticky nsew
   grid $MapToolsMapOriginLabel -row 0 -column 0 -sticky nsw 
   grid $MapToolsMapOriginLabelDisp -row 0 -column 1 -sticky nsw
-  grid $MapToolsMapCOMLabel -row 0 -column 2 -sticky nsw 
-  grid $MapToolsMapCOMLabelDisp -row 0 -column 3 -sticky nsw
-  grid $MapToolsMapXsizeLabel -row 1 -column 0 -sticky nsw 
-  grid $MapToolsMapXsizeLabelDisp -row 1 -column 1 -sticky nsw
-  grid $MapToolsMapYsizeLabel -row 1 -column 2 -sticky nsw 
-  grid $MapToolsMapYsizeLabelDisp -row 1 -column 3 -sticky nsw
-  grid $MapToolsMapZsizeLabel -row 1 -column 4 -sticky nsw 
-  grid $MapToolsMapZsizeLabelDisp -row 1 -column 5 -sticky nsw
-  grid $MapToolsMapMinLabel -row 2 -column 0 -sticky nsw
-  grid $MapToolsMapMinLabelDisp -row 2 -column 1 -sticky nsw
-  grid $MapToolsMapMaxLabel -row 2 -column 2 -sticky nsw
-  grid $MapToolsMapMaxLabelDisp -row 2 -column 3 -sticky nsw
+  grid $MapToolsMapCOMLabel -row 1 -column 0 -sticky nsw 
+  grid $MapToolsMapCOMLabelDisp -row 1 -column 1 -sticky nsw -columnspan 5
+  grid $MapToolsMapXsizeLabel -row 2 -column 0 -sticky nsw 
+  grid $MapToolsMapXsizeLabelDisp -row 2 -column 1 -sticky nsw
+  grid $MapToolsMapYsizeLabel -row 2 -column 2 -sticky nsw 
+  grid $MapToolsMapYsizeLabelDisp -row 2 -column 3 -sticky nsw
+  grid $MapToolsMapZsizeLabel -row 2 -column 4 -sticky nsw 
+  grid $MapToolsMapZsizeLabelDisp -row 2 -column 5 -sticky nsw
+  grid $MapToolsMapMinLabel -row 3 -column 0 -sticky nsw
+  grid $MapToolsMapMinLabelDisp -row 3 -column 1 -sticky nsw
+  grid $MapToolsMapMaxLabel -row 3 -column 2 -sticky nsw
+  grid $MapToolsMapMaxLabelDisp -row 3 -column 3 -sticky nsw
   
   set HistPlotFrame [ttk::labelframe $w.hlf.n.f5.main.plot -labelanchor nw]
-  grid columnconfigure $HistPlotFrame 1 -weight 1  
+ # grid columnconfigure $HistPlotFrame 1 -weight 1  
   set GenerateHistPlot [ttk::button $w.hlf.n.f5.main.plot.histbutton -text "Generate Histogram" -command {MDFFGUI::gui::generate_histogram} -state enabled]
   set HistPlotBinLabel [ttk::label $w.hlf.n.f5.main.plot.histbinlabel -text "Number of Bins:"]
   set HistPlotBinEntry [ttk::entry $w.hlf.n.f5.main.plot.histbinentry -textvariable MDFFGUI::settings::HistPlotBins -width 5]
@@ -1084,8 +1084,8 @@ proc MDFFGUI::gui::mdffgui {} {
   }
   bind $ShowMapToolsHist <Button-1> {
       grid remove .mdffgui.hlf.n.f5.main.showhist
-      grid .mdffgui.hlf.n.f5.main.plot -row 2 -column 0 -sticky nsew -pady 5
-      grid columnconfigure .mdffgui.hlf.n.f5.main.plot 1 -weight 1
+      grid .mdffgui.hlf.n.f5.main.plot -row 2 -column 0 -sticky nsw -pady 5 -columnspan 10
+   #   grid columnconfigure .mdffgui.hlf.n.f5.main.plot 1 -weight 1
       MDFFGUI::gui::resizeToActiveTab
   }
    
@@ -1145,7 +1145,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsCCEntrySel [ttk::entry $w.hlf.n.f5.main.structframe.ccentrysel -textvariable MDFFGUI::settings::CCSel -width 20]
   set MapToolsCCLabelRes [ttk::label $w.hlf.n.f5.main.structframe.cclabelres -text "map resolution (A):"]
   set MapToolsCCEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.ccentryres -textvariable MDFFGUI::settings::CCRes -width 5]
-  set MapToolsCCButton [ttk::button $w.hlf.n.f5.main.structframe.ccbutton -text "Generate" -command { set MDFFGUI::gui::CCOutput [voltool cc [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::CCSel] -res $MDFFGUI::settings::CCRes -mol $MDFFGUI::settings::MapToolsMolID] } ]
+  set MapToolsCCButton [ttk::button $w.hlf.n.f5.main.structframe.ccbutton -text "Calculate" -command { set MDFFGUI::gui::CCOutput [voltool cc [atomselect $MDFFGUI::settings::MapToolsStructMolID $MDFFGUI::settings::CCSel] -res $MDFFGUI::settings::CCRes -mol $MDFFGUI::settings::MapToolsMolID] } ]
   set MapToolsCCLabelOutput [ttk::label $w.hlf.n.f5.main.structframe.cclabelout -text "CC:"]
   set MapToolsCCOutput [ttk::label $w.hlf.n.f5.main.structframe.ccout -textvariable MDFFGUI::gui::CCOutput -width 10]
   
@@ -1160,8 +1160,8 @@ proc MDFFGUI::gui::mdffgui {} {
   }
   bind $ShowMapToolsStruct <Button-1> {
       grid remove .mdffgui.hlf.n.f5.main.showstruct
-      grid .mdffgui.hlf.n.f5.main.structframe -row 3 -column 0 -sticky nsew -pady 5
-      grid columnconfigure .mdffgui.hlf.n.f5.main.structframe 1 -weight 1
+      grid .mdffgui.hlf.n.f5.main.structframe -row 3 -column 0 -sticky nsw -pady 5 -columnspan 10
+ #     grid columnconfigure .mdffgui.hlf.n.f5.main.structframe 1 -weight 1
       MDFFGUI::gui::resizeToActiveTab
   }
   
@@ -1303,90 +1303,90 @@ proc MDFFGUI::gui::mdffgui {} {
   }
   bind $ShowMapToolsUnary <Button-1> {
       grid remove .mdffgui.hlf.n.f5.main.showunary
-      grid .mdffgui.hlf.n.f5.main.unaryframe -row 4 -column 0 -sticky nsew -pady 5
-      grid columnconfigure .mdffgui.hlf.n.f5.main.unaryframe 1 -weight 1
+      grid .mdffgui.hlf.n.f5.main.unaryframe -row 4 -column 0 -sticky nsw -pady 5 -columnspan 10
+  #    grid columnconfigure .mdffgui.hlf.n.f5.main.unaryframe 1 -weight 1
       MDFFGUI::gui::resizeToActiveTab
   }
   
   grid $ShowMapToolsUnary -row 4 -column 0 -sticky nswe
   
-  grid $MapToolsTrimLabel -row 0 -column 0 -sticky nswe
-  grid $MapToolsTrimLabelX1 -row 0 -column 1 -sticky nswe
-  grid $MapToolsTrimEntryX1 -row 0 -column 2 -sticky nswe
-  grid $MapToolsTrimLabelX2 -row 0 -column 3 -sticky nswe
-  grid $MapToolsTrimEntryX2 -row 0 -column 4 -sticky nswe
-  grid $MapToolsTrimLabelY1 -row 0 -column 5 -sticky nswe
-  grid $MapToolsTrimEntryY1 -row 0 -column 6 -sticky nswe
-  grid $MapToolsTrimLabelY2 -row 0 -column 7 -sticky nswe
-  grid $MapToolsTrimEntryY2 -row 0 -column 8 -sticky nswe
-  grid $MapToolsTrimLabelZ1 -row 0 -column 9 -sticky nswe
-  grid $MapToolsTrimEntryZ1 -row 0 -column 10 -sticky nswe
-  grid $MapToolsTrimLabelZ2 -row 0 -column 11 -sticky nswe
-  grid $MapToolsTrimEntryZ2 -row 0 -column 12 -sticky nswe
-  grid $MapToolsTrimButton -row 0 -column 13 -sticky nsw
+  grid $MapToolsTrimLabel -row 0 -column 0 -sticky nsw 
+  grid $MapToolsTrimLabelX1 -row 0 -column 1 -sticky nsw 
+  grid $MapToolsTrimEntryX1 -row 0 -column 2 -sticky nsw 
+  grid $MapToolsTrimLabelX2 -row 0 -column 3 -sticky nsw 
+  grid $MapToolsTrimEntryX2 -row 0 -column 4 -sticky nsw 
+  grid $MapToolsTrimLabelY1 -row 0 -column 5 -sticky nsw 
+  grid $MapToolsTrimEntryY1 -row 0 -column 6 -sticky nsw 
+  grid $MapToolsTrimLabelY2 -row 0 -column 7 -sticky nsw 
+  grid $MapToolsTrimEntryY2 -row 0 -column 8 -sticky nsw 
+  grid $MapToolsTrimLabelZ1 -row 0 -column 9 -sticky nsw 
+  grid $MapToolsTrimEntryZ1 -row 0 -column 10 -sticky nsw 
+  grid $MapToolsTrimLabelZ2 -row 0 -column 11 -sticky nsw 
+  grid $MapToolsTrimEntryZ2 -row 0 -column 12 -sticky nsw 
+  grid $MapToolsTrimButton -row 0 -column 13 -sticky nsw -columnspan 2
   
-  grid $MapToolsCropLabel -row 1 -column 0 -sticky nswe
-  grid $MapToolsCropLabelX1 -row 1 -column 1 -sticky nswe
-  grid $MapToolsCropEntryX1 -row 1 -column 2 -sticky nswe
-  grid $MapToolsCropLabelX2 -row 1 -column 3 -sticky nswe
-  grid $MapToolsCropEntryX2 -row 1 -column 4 -sticky nswe
-  grid $MapToolsCropLabelY1 -row 1 -column 5 -sticky nswe
-  grid $MapToolsCropEntryY1 -row 1 -column 6 -sticky nswe
-  grid $MapToolsCropLabelY2 -row 1 -column 7 -sticky nswe
-  grid $MapToolsCropEntryY2 -row 1 -column 8 -sticky nswe
-  grid $MapToolsCropLabelZ1 -row 1 -column 9 -sticky nswe
-  grid $MapToolsCropEntryZ1 -row 1 -column 10 -sticky nswe
-  grid $MapToolsCropLabelZ2 -row 1 -column 11 -sticky nswe
-  grid $MapToolsCropEntryZ2 -row 1 -column 12 -sticky nswe
-  grid $MapToolsCropButton -row 1 -column 13 -sticky nsw
+  grid $MapToolsCropLabel -row 1 -column 0 -sticky nswe 
+  grid $MapToolsCropLabelX1 -row 1 -column 1 -sticky nswe 
+  grid $MapToolsCropEntryX1 -row 1 -column 2 -sticky nswe 
+  grid $MapToolsCropLabelX2 -row 1 -column 3 -sticky nswe 
+  grid $MapToolsCropEntryX2 -row 1 -column 4 -sticky nswe 
+  grid $MapToolsCropLabelY1 -row 1 -column 5 -sticky nswe 
+  grid $MapToolsCropEntryY1 -row 1 -column 6 -sticky nswe 
+  grid $MapToolsCropLabelY2 -row 1 -column 7 -sticky nswe 
+  grid $MapToolsCropEntryY2 -row 1 -column 8 -sticky nswe 
+  grid $MapToolsCropLabelZ1 -row 1 -column 9 -sticky nswe 
+  grid $MapToolsCropEntryZ1 -row 1 -column 10 -sticky nswe 
+  grid $MapToolsCropLabelZ2 -row 1 -column 11 -sticky nswe 
+  grid $MapToolsCropEntryZ2 -row 1 -column 12 -sticky nswe 
+  grid $MapToolsCropButton -row 1 -column 13 -sticky nsw -columnspan 2
   
-  grid $MapToolsClampLabel -row 2 -column 0 -sticky nswe
-  grid $MapToolsClampLabelMin -row 2 -column 1 -sticky nswe
-  grid $MapToolsClampEntryMin -row 2 -column 2 -sticky nswe
-  grid $MapToolsClampLabelMax -row 2 -column 3 -sticky nswe
-  grid $MapToolsClampEntryMax -row 2 -column 4 -sticky nswe
-  grid $MapToolsClampButton -row 2 -column 5 -sticky nsw
+  grid $MapToolsClampLabel -row 2 -column 0 -sticky nswe 
+  grid $MapToolsClampLabelMin -row 2 -column 1 -sticky nswe 
+  grid $MapToolsClampEntryMin -row 2 -column 2 -sticky nswe 
+  grid $MapToolsClampLabelMax -row 2 -column 3 -sticky nswe 
+  grid $MapToolsClampEntryMax -row 2 -column 4 -sticky nswe 
+  grid $MapToolsClampButton -row 2 -column 5 -sticky nsw -columnspan 2
   
-  grid $MapToolsSmultLabel -row 3 -column 0 -sticky nswe
-  grid $MapToolsSmultLabelAmt -row 3 -column 1 -sticky nswe
-  grid $MapToolsSmultEntryAmt -row 3 -column 2 -sticky nswe
-  grid $MapToolsSmultButton -row 3 -column 3 -sticky nsw
+  grid $MapToolsSmultLabel -row 3 -column 0 -sticky nswe 
+  grid $MapToolsSmultLabelAmt -row 3 -column 1 -sticky nswe 
+  grid $MapToolsSmultEntryAmt -row 3 -column 2 -sticky nswe 
+  grid $MapToolsSmultButton -row 3 -column 3 -sticky nsw -columnspan 2
   
-  grid $MapToolsSAddLabel -row 4 -column 0 -sticky nswe
-  grid $MapToolsSAddLabelAmt -row 4 -column 1 -sticky nswe
-  grid $MapToolsSAddEntryAmt -row 4 -column 2 -sticky nswe
-  grid $MapToolsSAddButton -row 4 -column 3 -sticky nsw
+  grid $MapToolsSAddLabel -row 4 -column 0 -sticky nswe 
+  grid $MapToolsSAddLabelAmt -row 4 -column 1 -sticky nswe 
+  grid $MapToolsSAddEntryAmt -row 4 -column 2 -sticky nswe 
+  grid $MapToolsSAddButton -row 4 -column 3 -sticky nsw -columnspan 2
   
-  grid $MapToolsRangeLabel -row 5 -column 0 -sticky nswe
-  grid $MapToolsRangeLabelMin -row 5 -column 1 -sticky nswe
-  grid $MapToolsRangeEntryMin -row 5 -column 2 -sticky nswe
-  grid $MapToolsRangeLabelMax -row 5 -column 3 -sticky nswe
-  grid $MapToolsRangeEntryMax -row 5 -column 4 -sticky nswe
-  grid $MapToolsRangeButton -row 5 -column 5 -sticky nsw
+  grid $MapToolsRangeLabel -row 5 -column 0 -sticky nswe 
+  grid $MapToolsRangeLabelMin -row 5 -column 1 -sticky nswe 
+  grid $MapToolsRangeEntryMin -row 5 -column 2 -sticky nswe 
+  grid $MapToolsRangeLabelMax -row 5 -column 3 -sticky nswe 
+  grid $MapToolsRangeEntryMax -row 5 -column 4 -sticky nswe 
+  grid $MapToolsRangeButton -row 5 -column 5 -sticky nsw -columnspan 2
   
-  grid $MapToolsBinmaskLabel -row 6 -column 0 -sticky nswe
-  grid $MapToolsBinmaskLabelAmt -row 6 -column 1 -sticky nswe
-  grid $MapToolsBinmaskEntryAmt -row 6 -column 2 -sticky nswe
-  grid $MapToolsBinmaskButton -row 6 -column 3 -sticky nsw
+  grid $MapToolsBinmaskLabel -row 6 -column 0 -sticky nswe 
+  grid $MapToolsBinmaskLabelAmt -row 6 -column 1 -sticky nswe 
+  grid $MapToolsBinmaskEntryAmt -row 6 -column 2 -sticky nswe 
+  grid $MapToolsBinmaskButton -row 6 -column 3 -sticky nsw -columnspan 2
   
-  grid $MapToolsSmoothLabel -row 7 -column 0 -sticky nswe
-  grid $MapToolsSmoothLabelAmt -row 7 -column 1 -sticky nswe
-  grid $MapToolsSmoothEntryAmt -row 7 -column 2 -sticky nswe
-  grid $MapToolsSmoothButton -row 7 -column 3 -sticky nsw
+  grid $MapToolsSmoothLabel -row 7 -column 0 -sticky nswe 
+  grid $MapToolsSmoothLabelAmt -row 7 -column 1 -sticky nswe 
+  grid $MapToolsSmoothEntryAmt -row 7 -column 2 -sticky nswe 
+  grid $MapToolsSmoothButton -row 7 -column 3 -sticky nsw -columnspan 2
   
-  grid $MapToolsPotLabel -row 8 -column 0 -sticky nswe
-  grid $MapToolsPotLabelAmt -row 8 -column 1 -sticky nswe
-  grid $MapToolsPotEntryAmt -row 8 -column 2 -sticky nswe
-  grid $MapToolsPotButton -row 8 -column 3 -sticky nsw
+  grid $MapToolsPotLabel -row 8 -column 0 -sticky nswe 
+  grid $MapToolsPotLabelAmt -row 8 -column 1 -sticky nswe 
+  grid $MapToolsPotEntryAmt -row 8 -column 2 -sticky nswe 
+  grid $MapToolsPotButton -row 8 -column 3 -sticky nsw -columnspan 2
   
-  grid $MapToolsDownsampleLabel -row 9 -column 0 -sticky nswe
-  grid $MapToolsDownsampleButton -row 9 -column 1 -sticky nsw
+  grid $MapToolsDownsampleLabel -row 9 -column 0 -sticky nswe 
+  grid $MapToolsDownsampleButton -row 9 -column 1 -sticky nsw -columnspan 2
 
-  grid $MapToolsSupersampleLabel -row 10 -column 0 -sticky nswe
-  grid $MapToolsSupersampleButton -row 10 -column 1 -sticky nsw
+  grid $MapToolsSupersampleLabel -row 10 -column 0 -sticky nswe 
+  grid $MapToolsSupersampleButton -row 10 -column 1 -sticky nsw -columnspan 2
  
-  grid $MapToolsSigmaLabel -row 11 -column 0 -sticky nswe
-  grid $MapToolsSigmaButton -row 11 -column 1 -sticky nsw
+  grid $MapToolsSigmaLabel -row 11 -column 0 -sticky nswe  
+  grid $MapToolsSigmaButton -row 11 -column 1 -sticky nsw -columnspan 2
   
   #Binary Ops
   set MapToolsBinaryFrame [ttk::labelframe $w.hlf.n.f5.main.binaryframe -labelanchor nw]
@@ -1434,8 +1434,8 @@ proc MDFFGUI::gui::mdffgui {} {
   }
   bind $ShowMapToolsBinary <Button-1> {
       grid remove .mdffgui.hlf.n.f5.main.showbinary
-      grid .mdffgui.hlf.n.f5.main.binaryframe -row 5 -column 0 -sticky nsew -pady 5
-      grid columnconfigure .mdffgui.hlf.n.f5.main.binaryframe 1 -weight 1
+      grid .mdffgui.hlf.n.f5.main.binaryframe -row 5 -column 0 -sticky nsw -pady 5 -columnspan 10
+ #     grid columnconfigure .mdffgui.hlf.n.f5.main.binaryframe 1 -weight 1
       MDFFGUI::gui::resizeToActiveTab
   }
   
@@ -2786,8 +2786,8 @@ proc MDFFGUI::gui::fill_mapmol_menu {args} {
   $name delete 0 end
 
   set molList {}
-  foreach mm [array names ::vmd_molecule] {
-    if { $::vmd_molecule($mm) != 0} {
+  foreach mm [array names ::vmd_initialize_structure] {
+    if { $::vmd_initialize_structure($mm) != 0} {
       lappend molList $mm
       $name add radiobutton -variable MDFFGUI::settings::MapToolsMolID \
       -value $mm -label "$mm [molinfo $mm get name]" \
