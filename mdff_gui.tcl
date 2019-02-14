@@ -197,7 +197,9 @@ namespace eval MDFFGUI:: {
     variable SmoothAmt 0
     variable PotAmt 0
     variable MapToolsMol2ID ""
-     
+    variable UnionOrIntersection ""
+    variable InterpolationOrNo ""
+         
     variable ParameterList [list [file join $env(CHARMMPARDIR) par_all36_prot.prm]\
     [file join $env(CHARMMPARDIR) par_all36_lipid.prm] \
   [file join $env(CHARMMPARDIR) par_all36_na.prm] [file join $env(CHARMMPARDIR) par_all36_carb.prm] \
@@ -1401,6 +1403,26 @@ proc MDFFGUI::gui::mdffgui {} {
   
   set MapToolsSelectMap2 [ttk::button $w.hlf.n.f5.main.binaryframe.mapbutton -text "Browse" -command {MDFFGUI::gui::get_map2} ]
   
+ #Union or Intersection
+  set MapToolsIntersection [ttk::radiobutton $w.hlf.n.f5.main.binaryframe.intersection -variable MDFFGUI::settings::UnionOrIntersection -value "" -text "Intersection"]
+  set MapToolsUnion [ttk::radiobutton $w.hlf.n.f5.main.binaryframe.union -variable MDFFGUI::settings::UnionOrIntersection -value "-union" -text "Union"]
+ 
+ #Interpolation or No
+  set MapToolsInterpolation [ttk::radiobutton $w.hlf.n.f5.main.binaryframe.interpolation -variable MDFFGUI::settings::InterpolationOrNo -value "" -text "Interpolate"]
+  set MapToolsNoInterp [ttk::radiobutton $w.hlf.n.f5.main.binaryframe.nointerp -variable MDFFGUI::settings::InterpolationOrNo -value "-nointerp" -text "No Interpolation"]
+  
+  #Add
+  set MapToolsAddButton [ttk::button $w.hlf.n.f5.main.binaryframe.addbutton -text "Add Maps" -command { voltool add -mol1 $MDFFGUI::settings::MapToolsMolID -mol2 $MDFFGUI::settings::MapToolsMol2ID $MDFFGUI::settings::UnionOrIntersection $MDFFGUI::settings::InterpolationOrNo -o [MDFFGUI::gui::save_map] } ]
+  
+  #Diff
+  set MapToolsDiffButton [ttk::button $w.hlf.n.f5.main.binaryframe.diffbutton -text "Subtract Maps" -command { voltool diff -mol1 $MDFFGUI::settings::MapToolsMolID -mol2 $MDFFGUI::settings::MapToolsMol2ID $MDFFGUI::settings::UnionOrIntersection $MDFFGUI::settings::InterpolationOrNo -o [MDFFGUI::gui::save_map] } ]
+  
+  #Mult
+  set MapToolsMultButton [ttk::button $w.hlf.n.f5.main.binaryframe.multbutton -text "Multiply Maps" -command { voltool mult -mol1 $MDFFGUI::settings::MapToolsMolID -mol2 $MDFFGUI::settings::MapToolsMol2ID $MDFFGUI::settings::UnionOrIntersection $MDFFGUI::settings::InterpolationOrNo -o [MDFFGUI::gui::save_map] } ]
+  
+  #Avg
+  set MapToolsAvgButton [ttk::button $w.hlf.n.f5.main.binaryframe.avgbutton -text "Average Maps" -command { voltool avg -mol1 $MDFFGUI::settings::MapToolsMolID -mol2 $MDFFGUI::settings::MapToolsMol2ID $MDFFGUI::settings::UnionOrIntersection $MDFFGUI::settings::InterpolationOrNo -o [MDFFGUI::gui::save_map] } ]
+  
   set ShowMapToolsBinary [ttk::label $w.hlf.n.f5.main.showbinary -text "$rightPoint Multiple Maps Ops..." -anchor w]
   set HideMapToolsBinary [ttk::label $w.hlf.n.f5.main.binaryframe.hidebinary -text "$downPoint Multiple Maps Ops" -anchor w]
 
@@ -1423,6 +1445,14 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsMol2 -row 0 -column 0 -sticky nswe
   grid $MapToolsMol2MenuButton -row 0 -column 1 -sticky nswe
   grid $MapToolsSelectMap2 -row 0 -column 2 -sticky nswe
+  grid $MapToolsIntersection -row 1 -column 0 -sticky nswe 
+  grid $MapToolsUnion -row 1 -column 1 -sticky nswe 
+  grid $MapToolsInterpolation -row 2 -column 0 -sticky nswe 
+  grid $MapToolsNoInterp -row 2 -column 1 -sticky nswe 
+  grid $MapToolsAddButton -row 3 -column 0 -sticky nswe
+  grid $MapToolsDiffButton -row 3 -column 1 -sticky nswe
+  grid $MapToolsMultButton -row 3 -column 2 -sticky nswe
+  grid $MapToolsAvgButton -row 3 -column 3 -sticky nswe
   #Basic MDFF analysis
   #set NBTab6 [ttk::frame $w.hlf.n.f6];
   #$Notebook add $NBTab6 -text "Analysis" 
