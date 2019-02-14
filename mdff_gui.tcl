@@ -2786,8 +2786,8 @@ proc MDFFGUI::gui::fill_mapmol_menu {args} {
   $name delete 0 end
 
   set molList {}
-  foreach mm [array names ::vmd_initialize_structure] {
-    if { $::vmd_initialize_structure($mm) != 0} {
+  foreach mm [array names ::vmd_molecule] {
+    if { $::vmd_molecule($mm) != 0 && [lsearch [molinfo list] $mm] != -1 } {
       lappend molList $mm
       $name add radiobutton -variable MDFFGUI::settings::MapToolsMolID \
       -value $mm -label "$mm [molinfo $mm get name]" \
@@ -2809,7 +2809,7 @@ proc MDFFGUI::gui::fill_mapmol2_menu {args} {
 
   set molList {}
   foreach mm [array names ::vmd_molecule] {
-    if { $::vmd_molecule($mm) != 0} {
+    if { $::vmd_molecule($mm) != 0 && [lsearch [molinfo list] $mm] != -1 } {
       lappend molList $mm
       $name add radiobutton -variable MDFFGUI::settings::MapToolsMol2ID \
       -value $mm -label "$mm [molinfo $mm get name]" \
