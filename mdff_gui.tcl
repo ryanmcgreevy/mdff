@@ -2849,7 +2849,7 @@ proc MDFFGUI::gui::fill_mapstructmol_menu {args} {
 proc MDFFGUI::gui::generate_histogram {} {
   global HistPlot 
   set nbins $MDFFGUI::settings::HistPlotBins
-  if {[info exists HistPlot]} {$HistPlot quit}
+  if {[info exists HistPlot]} { catch {$HistPlot quit}}
   
   global MAPMOL
   set MAPMOL $MDFFGUI::settings::MapToolsMolID 
