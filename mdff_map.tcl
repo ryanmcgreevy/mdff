@@ -259,7 +259,8 @@ proc ::MDFF::Map::mdff_histogram { args } {
      set highhistval [lindex $xlist $l] 
     }
   }
-      
+  
+  global ymin    
   set sorted [lsort -integer $histogram]
   set ymin [lindex $sorted 0]
   global ymax
@@ -280,7 +281,7 @@ proc ::MDFF::Map::mdff_histogram { args } {
   for {set j 0} {$j < $nbins} {incr j} {
     set left [expr [lindex $xlist $j] - (0.5 * $delta)]
     set right [expr [lindex $xlist $j] + (0.5 * $delta)]
-    $plot draw rectangle $left 0 $right [lindex $histogram $j] -fill "#0000ff" -tags rect$j
+    $plot draw rectangle $left $ymin $right [lindex $histogram $j] -fill "#0000ff" -tags rect$j
    
     #$plot add [lindex $xlist $j] [lindex $histogram $j] -marker square -fillcolor black -radius [expr 0.5*$delta] -callback histclick
   }
@@ -307,11 +308,10 @@ proc ::MDFF::Map::mdff_histogram { args } {
   
   bind [$plot getpath].f.cf <ButtonPress> {
     set bpress 1    
-    variable [$plot namespace]::xplotmin
     set x [expr (%x - $xplotming)/$scalexg + $xming]
     if {$x >= $xming && $x <= $xmaxg} { 
       $plot undraw "line"
-      $plot draw line $x 0 $x $ymax -tag "line"
+      $plot draw line $x $ymin $x $ymax -tag "line"
       mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
     }
   }
@@ -321,11 +321,10 @@ proc ::MDFF::Map::mdff_histogram { args } {
   }
   
   bind [$plot getpath].f.cf <Motion> {
+    set x [expr (%x - $xplotming)/$scalexg + $xming]
     if {$bpress && $x >= $xming && $x <= $xmaxg} {
-      variable [$plot namespace]::xplotmin
-      set x [expr (%x - $xplotming)/$scalexg + $xming]
       $plot undraw "line"
-      $plot draw line $x 0 $x $ymax -tag "line"
+      $plot draw line $x $ymin $x $ymax -tag "line"
       mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
     }
   }
