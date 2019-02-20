@@ -1510,7 +1510,7 @@ proc MDFFGUI::gui::add_density {} {
   set ADGScaleLabel [ttk::label $wad.hlf.gscalelabel -text "Grid Scaling Factor:"]
   set ADGScaleInput [ttk::entry $wad.hlf.gscaleentry -textvariable MDFFGUI::settings::GScale]
   
-  set ADThresholdLabel [ttk::label $wad.hlf.thresholdlabel -text "Grid Scaling Factor:"]
+  set ADThresholdLabel [ttk::label $wad.hlf.thresholdlabel -text "Threshold:"]
   set ADThresholdInput [ttk::entry $wad.hlf.thresholdentry -textvariable MDFFGUI::settings::GriddxThreshold]
 
   set ADLoadDensity [ttk::button $wad.hlf.loaddensity -text "Add Density" -command {MDFFGUI::gui::load_density}]
