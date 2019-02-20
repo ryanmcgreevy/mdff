@@ -2852,7 +2852,7 @@ proc MDFFGUI::gui::fill_mapstructmol_menu {args} {
   #set if any non-Graphics molecule is loaded
   if {[lsearch -exact $molList $MDFFGUI::settings::MapToolsStructMolID] == -1} {
     if {[lsearch -exact $molList [molinfo top]] != -1} {
-      set MDFFGUI::settings:MapToolsStructMolID [molinfo top]
+      set MDFFGUI::settings::MapToolsStructMolID [molinfo top]
     } else { set MDFFGUI::settings::MapToolsStructMolID $nullMolString }
   }
 }
