@@ -115,6 +115,7 @@ namespace eval MDFFGUI:: {
     variable Minsteps 200
     variable Numsteps 50000
     variable GScale 0.3
+    variable GriddxThreshold 0
     variable GridOff 0
     variable GridPDBSelText "protein and noh"
     variable IMDSelText "all"
@@ -459,15 +460,18 @@ proc MDFFGUI::gui::mdffgui {} {
   set DXSeparator [ttk::separator $w.hlf.n.f1.main.fileframe.dxseperator  -orient horizontal]   
 
   set DensityViewScroll [ttk::scrollbar $w.hlf.n.f1.main.fileframe.denviewscroll -command "$w.hlf.n.f1.main.fileframe.denview yview" -orient vertical]
-  set DensityView [ttk::treeview $w.hlf.n.f1.main.fileframe.denview -selectmode browse -yscrollcommand "$DensityViewScroll set"]
+  set DensityViewScrollX [ttk::scrollbar $w.hlf.n.f1.main.fileframe.denviewscrollx -command "$w.hlf.n.f1.main.fileframe.denview xview" -orient horizontal]
+  set DensityView [ttk::treeview $w.hlf.n.f1.main.fileframe.denview -selectmode browse -yscrollcommand "$DensityViewScroll set" -xscrollcommand "$DensityViewScrollX set" ]
 
-  $DensityView configure -columns {file selection gscale} -show {headings} -height 3
+  $DensityView configure -columns {file selection gscale threshold} -show {headings} -height 3
   $DensityView heading file -text "Density Filename"
   $DensityView heading selection -text "gridpdb selection"
   $DensityView heading gscale -text "gscale"
+  $DensityView heading threshold -text "threshold"
   $DensityView column file -width 200 -stretch 0 -anchor w
   $DensityView column selection -width 75 -stretch 1 -anchor w
   $DensityView column gscale -width 50 -stretch 0 -anchor e
+  $DensityView column threshold -width 50 -stretch 0 -anchor e
   set DensityViewAdd [ttk::button $w.hlf.n.f1.main.fileframe.denviewadd -text "Add" -command {MDFFGUI::gui::add_density}]
   
   set DensityViewRemove [ttk::button $w.hlf.n.f1.main.fileframe.denviewremove -text "Remove" -command {MDFFGUI::gui::remove_densityview  $MDFFGUI::gui::DensityView [$MDFFGUI::gui::DensityView focus] }]
@@ -530,6 +534,7 @@ proc MDFFGUI::gui::mdffgui {} {
   #grid $SelectDX -row 7 -column 3 -sticky nsew
 
   grid $DensityView -row 7 -column 1 -sticky nsew -rowspan 2
+  grid $DensityViewScrollX -row 9 -column 1 -sticky nsew
   grid $DensityViewAdd -row 7 -column 3 -sticky nsew
   grid $DensityViewRemove -row 8 -column 3 -sticky nsew
   grid $DensityViewScroll -row 7 -column 2 -sticky nsew -rowspan 2
@@ -1504,6 +1509,9 @@ proc MDFFGUI::gui::add_density {} {
 
   set ADGScaleLabel [ttk::label $wad.hlf.gscalelabel -text "Grid Scaling Factor:"]
   set ADGScaleInput [ttk::entry $wad.hlf.gscaleentry -textvariable MDFFGUI::settings::GScale]
+  
+  set ADThresholdLabel [ttk::label $wad.hlf.thresholdlabel -text "Grid Scaling Factor:"]
+  set ADThresholdInput [ttk::entry $wad.hlf.thresholdentry -textvariable MDFFGUI::settings::GriddxThreshold]
 
   set ADLoadDensity [ttk::button $wad.hlf.loaddensity -text "Add Density" -command {MDFFGUI::gui::load_density}]
 
@@ -1516,8 +1524,11 @@ proc MDFFGUI::gui::add_density {} {
 
   grid $ADGScaleLabel -row 2 -column 0 -sticky nsew
   grid $ADGScaleInput -row 2 -column 1 -sticky nsew
+  
+  grid $ADThresholdLabel -row 3 -column 0 -sticky nsew
+  grid $ADThresholdInput -row 3 -column 1 -sticky nsew
 
-  grid $ADLoadDensity -row 3 -column 0 -sticky nsew -columnspan 3
+  grid $ADLoadDensity -row 4 -column 0 -sticky nsew -columnspan 3
 }
 
 proc MDFFGUI::gui::add_density_xmdff {} {
@@ -2521,7 +2532,7 @@ proc MDFFGUI::gui::make_griddx {num file} {
     tk_messageBox -message "Please provide a density map file."
   } else {
     file mkdir $MDFFGUI::settings::CurrentDir 
-    mdff griddx -i $file -o [file join $MDFFGUI::settings::CurrentDir "griddx$num.dx"]
+    mdff griddx -i $file -o [file join $MDFFGUI::settings::CurrentDir "griddx$num.dx"] -threshold $MDFFGUI::settings::GriddxThreshold
     $MDFFSetup configure -state normal
    # set DensityID [mol new $MDFFGUI::settings::CurrentDXPath]
    # mol inactive $DensityID
@@ -2552,7 +2563,7 @@ proc MDFFGUI::gui::load_density {} {
 
   set MapID [mol new $MDFFGUI::settings::CurrentDXPath]
  
-  $DensityView insert {} end -id $MapID -values [list $MDFFGUI::settings::CurrentDXPath $MDFFGUI::settings::GridPDBSelText $MDFFGUI::settings::GScale]
+  $DensityView insert {} end -id $MapID -values [list $MDFFGUI::settings::CurrentDXPath $MDFFGUI::settings::GridPDBSelText $MDFFGUI::settings::GScale $MDFFGUI::settings::GriddxThreshold]
  
    
   if { [winfo exists ".add_density"] } {
