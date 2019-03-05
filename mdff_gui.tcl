@@ -207,6 +207,7 @@ namespace eval MDFFGUI:: {
     variable BinmaskAmt 0
     variable SmoothAmt 0
     variable PotAmt 0
+    variable SegAmt 5
     variable MapToolsMol2ID ""
     variable UnionOrIntersection ""
     variable InterpolationOrNo ""
@@ -1215,6 +1216,13 @@ proc MDFFGUI::gui::mdffgui {} {
   
   #unary ops
   set MapToolsUnaryFrame [ttk::labelframe $w.hlf.n.f5.main.unaryframe -labelanchor nw]
+  
+  #segmentation
+  set MapToolsSegLabel [ttk::label $w.hlf.n.f5.main.unaryframe.seglabel -text "Segmentation:"]
+  set MapToolsSegLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.seglabelamt -text "Segments:"]
+  set MapToolsSegEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.segentryamt -textvariable MDFFGUI::maptoolssettings::SegAmt -width 5]
+  set MapToolsSegButton [ttk::button $w.hlf.n.f5.main.unaryframe.segbutton -text "Segment" -command { segmentation segment -groups $MDFFGUI::maptoolssettings::SegAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID -separate_groups } ]
+  
   #Trim
   set MapToolsTrimLabel [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabel -text "Trim map in each direction:"]
   set MapToolsTrimLabelX1 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelx1 -text "-x:"]
@@ -1399,6 +1407,11 @@ proc MDFFGUI::gui::mdffgui {} {
  
   grid $MapToolsSigmaLabel -row 11 -column 0 -sticky nswe  
   grid $MapToolsSigmaButton -row 11 -column 1 -sticky nsw -columnspan 2
+  
+  grid $MapToolsSegLabel -row 12 -column 0 -sticky nswe 
+  grid $MapToolsSegLabelAmt -row 12 -column 1 -sticky nswe 
+  grid $MapToolsSegEntryAmt -row 12 -column 2 -sticky nswe 
+  grid $MapToolsSegButton -row 12 -column 3 -sticky nsw -columnspan 2
   
   #Binary Ops
   set MapToolsBinaryFrame [ttk::labelframe $w.hlf.n.f5.main.binaryframe -labelanchor nw]
