@@ -11,6 +11,7 @@ namespace eval MDFFGUI:: {
     variable xwad 
     variable currentMol
     variable nullMolString
+    variable nullVolString
     variable CurrentPDBFile
     variable CurrentPSFFile
     variable DensityID
@@ -83,6 +84,8 @@ namespace eval MDFFGUI:: {
     variable ShowBTNPadX
 
     variable MapToolsMolMenuText
+    variable MapToolsVolMenuText
+    variable MapToolsVol2MenuText
     variable MapToolsStructMolMenuText
     variable CCOutput ""
     variable MapToolsMol2MenuText
@@ -166,6 +169,8 @@ namespace eval MDFFGUI:: {
   #MapTools Settings. separate because we don't really need to save these in our settings file.
   namespace eval maptoolssettings {
     variable MapToolsMolID ""  
+    variable MapToolsVolID 0  
+    variable MapToolsVol2ID 0  
     variable MapToolsPlotX ""  
     variable HistPlotBins 30
     variable HistLog 1 
@@ -223,6 +228,7 @@ proc MDFFGUI::gui::mdffgui {} {
   variable wad 
   variable xwad 
   variable nullMolString "none"
+  variable nullVolString 0
   variable CurrentPDBFile
   variable CurrentPSFFile
   variable DensityID ""
@@ -1011,6 +1017,23 @@ proc MDFFGUI::gui::mdffgui {} {
   trace add variable MDFFGUI::maptoolssettings::MapToolsMolID write MDFFGUI::gui::set_mapmol_text
   set MDFFGUI::maptoolssettings::MapToolsMolID $nullMolString
   
+  set MapToolsVol [ttk::label $w.hlf.n.f5.main.fileframe.vollabel -text "Vol ID (Density Map):"]
+  set MapToolsVolMenuButton [ttk::menubutton $w.hlf.n.f5.main.fileframe.volmenubutton -textvar MDFFGUI::gui::MapToolsVolMenuText -menu $w.hlf.n.f5.main.fileframe.volmenubutton.volmenu]
+  set CurrentMapToolsVolMenu [menu $w.hlf.n.f5.main.fileframe.volmenubutton.volmenu -tearoff no]
+  
+  trace add variable MDFFGUI::maptoolssettings::MapToolsMolID write MDFFGUI::gui::set_map_stats
+  trace add variable MDFFGUI::maptoolssettings::MapToolsVolID write MDFFGUI::gui::set_map_stats
+  
+  #set_vol_text 
+  fill_mapvol_menu $CurrentMapToolsVolMenu
+  #nuclear option trace to capture volume data sets added to an existing molecule.
+  trace add variable ::vmd_logfile write "MDFFGUI::gui::fill_mapvol_menu $CurrentMapToolsVolMenu"
+  trace add variable MDFFGUI::maptoolssettings::MapToolsVolID write MDFFGUI::gui::set_mapvol_text
+  trace add variable MDFFGUI::maptoolssettings::MapToolsMolID write "MDFFGUI::gui::fill_mapvol_menu $CurrentMapToolsVolMenu"
+  trace add variable MDFFGUI::maptoolssettings::MapToolsMolID write MDFFGUI::gui::revert_volid
+
+  set MDFFGUI::maptoolssettings::MapToolsVolID $nullVolString
+  
   set MapToolsSelectMap [ttk::button $w.hlf.n.f5.main.fileframe.mapbutton -text "Browse" -command {MDFFGUI::gui::get_map} ]
   set MapToolsSaveMap [ttk::button $w.hlf.n.f5.main.fileframe.savemapbutton -text "Save" -command {MDFFGUI::gui::save_map} ]
  
@@ -1018,8 +1041,10 @@ proc MDFFGUI::gui::mdffgui {} {
   grid $MapToolsFileFrame -row 0 -column 0 -sticky nsw -columnspan 10
   grid $MapToolsMol -row 0 -column 0 -sticky nsw
   grid $MapToolsMolMenuButton   -row 0 -column 1 -sticky nsw
-  grid $MapToolsSelectMap   -row 0 -column 2 -sticky nsw
-  grid $MapToolsSaveMap   -row 0 -column 3 -sticky nsw
+  grid $MapToolsVol -row 0 -column 2 -sticky nsw
+  grid $MapToolsVolMenuButton   -row 0 -column 3 -sticky nsw
+  grid $MapToolsSelectMap   -row 0 -column 4 -sticky nsw
+  grid $MapToolsSaveMap   -row 0 -column 5 -sticky nsw
   
   set MapToolsInfoFrame [ttk::labelframe $w.hlf.n.f5.main.infoframe -labelanchor nw]
   #grid columnconfigure $MapToolsInfoFrame 1 -weight 1
@@ -1038,7 +1063,6 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsMapMaxLabel [ttk::label $w.hlf.n.f5.main.infoframe.maxlabel -text "Max Value: "]
   set MapToolsMapMaxLabelDisp [ttk::label $w.hlf.n.f5.main.infoframe.maxlabeldisp -textvar MDFFGUI::maptoolssettings::MapToolsMax]
   
-  trace add variable MDFFGUI::maptoolssettings::MapToolsMolID write MDFFGUI::gui::set_map_stats
   set ShowMapToolsInfo [ttk::label $w.hlf.n.f5.main.showinfo -text "$rightPoint Map Info..." -anchor w]
   set HideMapToolsInfo [ttk::label $w.hlf.n.f5.main.infoframe.hideinfo -text "$downPoint Map Info" -anchor w]
 
@@ -1132,7 +1156,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsFitEntrySel [ttk::entry $w.hlf.n.f5.main.structframe.fitentrysel -textvariable MDFFGUI::maptoolssettings::FitSel -width 20]
   set MapToolsFitLabelRes [ttk::label $w.hlf.n.f5.main.structframe.fitlabelres -text "map resolution (A):"]
   set MapToolsFitEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.fitentryres -textvariable MDFFGUI::maptoolssettings::FitRes -width 5]
-  set MapToolsFitButton [ttk::button $w.hlf.n.f5.main.structframe.fitbutton -text "Fit" -command { voltool fit [atomselect $MDFFGUI::maptoolssettings::MapToolsStructMolID $MDFFGUI::maptoolssettings::FitSel] -res $MDFFGUI::maptoolssettings::FitRes -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsFitButton [ttk::button $w.hlf.n.f5.main.structframe.fitbutton -text "Fit" -command { voltool fit [atomselect $MDFFGUI::maptoolssettings::MapToolsStructMolID $MDFFGUI::maptoolssettings::FitSel] -res $MDFFGUI::maptoolssettings::FitRes -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
 
   #Mask
   set MapToolsMaskLabel [ttk::label $w.hlf.n.f5.main.structframe.masklabel -text "Map Masking:"]
@@ -1142,7 +1166,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsMaskEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.maskentryres -textvariable MDFFGUI::maptoolssettings::MaskRes -width 5]
  # set MapToolsMaskLabelCutoff [ttk::label $w.hlf.n.f5.main.structframe.masklabelcutoff -text "cutoff (A):"]
  # set MapToolsMaskEntryCutoff [ttk::entry $w.hlf.n.f5.main.structframe.maskentrycutoff -textvariable MDFFGUI::settings::MaskCutoff -width 5]
-  set MapToolsMaskButton [ttk::button $w.hlf.n.f5.main.structframe.maskbutton -text "Mask" -command { voltool mask [atomselect $MDFFGUI::maptoolssettings::MapToolsStructMolID $MDFFGUI::maptoolssettings::MaskSel] -res $MDFFGUI::maptoolssettings::MaskRes -cutoff $MDFFGUI::maptoolssettings::MaskRes -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsMaskButton [ttk::button $w.hlf.n.f5.main.structframe.maskbutton -text "Mask" -command { voltool mask [atomselect $MDFFGUI::maptoolssettings::MapToolsStructMolID $MDFFGUI::maptoolssettings::MaskSel] -res $MDFFGUI::maptoolssettings::MaskRes -cutoff $MDFFGUI::maptoolssettings::MaskRes -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
  
   #Sim
   set MapToolsSimLabel [ttk::label $w.hlf.n.f5.main.structframe.simlabel -text "Simulated Density:"]
@@ -1158,7 +1182,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsCCEntrySel [ttk::entry $w.hlf.n.f5.main.structframe.ccentrysel -textvariable MDFFGUI::maptoolssettings::CCSel -width 20]
   set MapToolsCCLabelRes [ttk::label $w.hlf.n.f5.main.structframe.cclabelres -text "map resolution (A):"]
   set MapToolsCCEntryRes [ttk::entry $w.hlf.n.f5.main.structframe.ccentryres -textvariable MDFFGUI::maptoolssettings::CCRes -width 5]
-  set MapToolsCCButton [ttk::button $w.hlf.n.f5.main.structframe.ccbutton -text "Calculate" -command { set MDFFGUI::gui::CCOutput [voltool cc [atomselect $MDFFGUI::maptoolssettings::MapToolsStructMolID $MDFFGUI::maptoolssettings::CCSel] -res $MDFFGUI::maptoolssettings::CCRes -mol $MDFFGUI::maptoolssettings::MapToolsMolID] } ]
+  set MapToolsCCButton [ttk::button $w.hlf.n.f5.main.structframe.ccbutton -text "Calculate" -command { set MDFFGUI::gui::CCOutput [voltool cc [atomselect $MDFFGUI::maptoolssettings::MapToolsStructMolID $MDFFGUI::maptoolssettings::CCSel] -res $MDFFGUI::maptoolssettings::CCRes -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID] } ]
   set MapToolsCCLabelOutput [ttk::label $w.hlf.n.f5.main.structframe.cclabelout -text "CC:"]
   set MapToolsCCOutput [ttk::label $w.hlf.n.f5.main.structframe.ccout -textvariable MDFFGUI::gui::CCOutput -width 10]
   
@@ -1221,7 +1245,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsSegLabel [ttk::label $w.hlf.n.f5.main.unaryframe.seglabel -text "Segmentation:"]
   set MapToolsSegLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.seglabelamt -text "Segments:"]
   set MapToolsSegEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.segentryamt -textvariable MDFFGUI::maptoolssettings::SegAmt -width 5]
-  set MapToolsSegButton [ttk::button $w.hlf.n.f5.main.unaryframe.segbutton -text "Segment" -command { segmentation segment -groups $MDFFGUI::maptoolssettings::SegAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID -separate_groups } ]
+  set MapToolsSegButton [ttk::button $w.hlf.n.f5.main.unaryframe.segbutton -text "Segment" -command { segmentation segment -groups $MDFFGUI::maptoolssettings::SegAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID -separate_groups } ]
   
   #Trim
   set MapToolsTrimLabel [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabel -text "Trim map in each direction:"]
@@ -1237,7 +1261,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsTrimEntryZ1 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryz1 -textvariable MDFFGUI::maptoolssettings::TrimZ1 -width 5]
   set MapToolsTrimLabelZ2 [ttk::label $w.hlf.n.f5.main.unaryframe.trimlabelz2 -text "+z:"]
   set MapToolsTrimEntryZ2 [ttk::entry $w.hlf.n.f5.main.unaryframe.trimentryz2 -textvariable MDFFGUI::maptoolssettings::TrimZ2 -width 5]
-  set MapToolsTrimButton [ttk::button $w.hlf.n.f5.main.unaryframe.trimbutton -text "Trim" -command { voltool trim -amt "$MDFFGUI::maptoolssettings::TrimX1 $MDFFGUI::maptoolssettings::TrimX2 $MDFFGUI::maptoolssettings::TrimY1 $MDFFGUI::maptoolssettings::TrimY2 $MDFFGUI::maptoolssettings::TrimZ1 $MDFFGUI::maptoolssettings::TrimZ2" -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsTrimButton [ttk::button $w.hlf.n.f5.main.unaryframe.trimbutton -text "Trim" -command { voltool trim -amt "$MDFFGUI::maptoolssettings::TrimX1 $MDFFGUI::maptoolssettings::TrimX2 $MDFFGUI::maptoolssettings::TrimY1 $MDFFGUI::maptoolssettings::TrimY2 $MDFFGUI::maptoolssettings::TrimZ1 $MDFFGUI::maptoolssettings::TrimZ2" -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   set MapToolsCropLabel [ttk::label $w.hlf.n.f5.main.unaryframe.croplabel -text "Crop map in coordinate space:"]
   set MapToolsCropLabelX1 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabelx1 -text "minx:"]
@@ -1252,7 +1276,7 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsCropEntryZ1 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryz1 -textvariable MDFFGUI::maptoolssettings::CropZ1 -width 5]
   set MapToolsCropLabelZ2 [ttk::label $w.hlf.n.f5.main.unaryframe.croplabelz2 -text "maxz:"]
   set MapToolsCropEntryZ2 [ttk::entry $w.hlf.n.f5.main.unaryframe.cropentryz2 -textvariable MDFFGUI::maptoolssettings::CropZ2 -width 5]
-  set MapToolsCropButton [ttk::button $w.hlf.n.f5.main.unaryframe.cropbutton -text "Crop" -command { voltool crop -amt "$MDFFGUI::maptoolssettings::CropX1 $MDFFGUI::maptoolssettings::CropY1 $MDFFGUI::maptoolssettings::CropZ1 $MDFFGUI::maptoolssettings::CropX2 $MDFFGUI::maptoolssettings::CropY2 $MDFFGUI::maptoolssettings::CropZ2" -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsCropButton [ttk::button $w.hlf.n.f5.main.unaryframe.cropbutton -text "Crop" -command { voltool crop -amt "$MDFFGUI::maptoolssettings::CropX1 $MDFFGUI::maptoolssettings::CropY1 $MDFFGUI::maptoolssettings::CropZ1 $MDFFGUI::maptoolssettings::CropX2 $MDFFGUI::maptoolssettings::CropY2 $MDFFGUI::maptoolssettings::CropZ2" -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   #Clamp
   set MapToolsClampLabel [ttk::label $w.hlf.n.f5.main.unaryframe.clamplabel -text "Clamp map to range:"]
@@ -1260,19 +1284,19 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsClampEntryMin [ttk::entry $w.hlf.n.f5.main.unaryframe.clampentrymin -textvariable MDFFGUI::maptoolssettings::ClampMin -width 5]
   set MapToolsClampLabelMax [ttk::label $w.hlf.n.f5.main.unaryframe.clamplabelmax -text "max:"]
   set MapToolsClampEntryMax [ttk::entry $w.hlf.n.f5.main.unaryframe.clampentrymax -textvariable MDFFGUI::maptoolssettings::ClampMax -width 5]
-  set MapToolsClampButton [ttk::button $w.hlf.n.f5.main.unaryframe.clampbutton -text "Clamp" -command { voltool clamp -min $MDFFGUI::maptoolssettings::ClampMin -max $MDFFGUI::maptoolssettings::ClampMax -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsClampButton [ttk::button $w.hlf.n.f5.main.unaryframe.clampbutton -text "Clamp" -command { voltool clamp -min $MDFFGUI::maptoolssettings::ClampMin -max $MDFFGUI::maptoolssettings::ClampMax -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   #Smult
   set MapToolsSmultLabel [ttk::label $w.hlf.n.f5.main.unaryframe.smultlabel -text "Multiply by scalar:"]
   set MapToolsSmultLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.smultlabelamt -text "Amount:"]
   set MapToolsSmultEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.smultentryamt -textvariable MDFFGUI::maptoolssettings::SmultAmt -width 5]
-  set MapToolsSmultButton [ttk::button $w.hlf.n.f5.main.unaryframe.smultbutton -text "Mult" -command { voltool smult -amt $MDFFGUI::maptoolssettings::SmultAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsSmultButton [ttk::button $w.hlf.n.f5.main.unaryframe.smultbutton -text "Mult" -command { voltool smult -amt $MDFFGUI::maptoolssettings::SmultAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   #SAdd
   set MapToolsSAddLabel [ttk::label $w.hlf.n.f5.main.unaryframe.saddlabel -text "Add scalar:"]
   set MapToolsSAddLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.saddlabelamt -text "Amount:"]
   set MapToolsSAddEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.saddentryamt -textvariable MDFFGUI::maptoolssettings::SAddAmt -width 5]
-  set MapToolsSAddButton [ttk::button $w.hlf.n.f5.main.unaryframe.saddbutton -text "Add" -command { voltool sadd -amt $MDFFGUI::maptoolssettings::SAddAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsSAddButton [ttk::button $w.hlf.n.f5.main.unaryframe.saddbutton -text "Add" -command { voltool sadd -amt $MDFFGUI::maptoolssettings::SAddAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   #Range
   set MapToolsRangeLabel [ttk::label $w.hlf.n.f5.main.unaryframe.rangelabel -text "Fit values to range:"]
@@ -1280,37 +1304,37 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsRangeEntryMin [ttk::entry $w.hlf.n.f5.main.unaryframe.rangeentrymin -textvariable MDFFGUI::maptoolssettings::RangeMin -width 5]
   set MapToolsRangeLabelMax [ttk::label $w.hlf.n.f5.main.unaryframe.rangelabelmax -text "max:"]
   set MapToolsRangeEntryMax [ttk::entry $w.hlf.n.f5.main.unaryframe.rangeentrymax -textvariable MDFFGUI::maptoolssettings::RangeMax -width 5]
-  set MapToolsRangeButton [ttk::button $w.hlf.n.f5.main.unaryframe.rangebutton -text "Fit" -command { voltool range -minmax "$MDFFGUI::maptoolssettings::RangeMin $MDFFGUI::maptoolssettings::RangeMax" -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsRangeButton [ttk::button $w.hlf.n.f5.main.unaryframe.rangebutton -text "Fit" -command { voltool range -minmax "$MDFFGUI::maptoolssettings::RangeMin $MDFFGUI::maptoolssettings::RangeMax" -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
 
   #Binmask
   set MapToolsBinmaskLabel [ttk::label $w.hlf.n.f5.main.unaryframe.binmasklabel -text "Binary Mask:"]
   set MapToolsBinmaskLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.binmasklabelamt -text "Threshold:"]
   set MapToolsBinmaskEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.binmaskentryamt -textvariable MDFFGUI::maptoolssettings::BinmaskAmt -width 5]
-  set MapToolsBinmaskButton [ttk::button $w.hlf.n.f5.main.unaryframe.binmaskbutton -text "Mask" -command { voltool binmask -threshold $MDFFGUI::maptoolssettings::BinmaskAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsBinmaskButton [ttk::button $w.hlf.n.f5.main.unaryframe.binmaskbutton -text "Mask" -command { voltool binmask -threshold $MDFFGUI::maptoolssettings::BinmaskAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   #Smooth
   set MapToolsSmoothLabel [ttk::label $w.hlf.n.f5.main.unaryframe.smoothlabel -text "Guassian Blur:"]
   set MapToolsSmoothLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.smoothlabelamt -text "Sigma:"]
   set MapToolsSmoothEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.smoothentryamt -textvariable MDFFGUI::maptoolssettings::SmoothAmt -width 5]
-  set MapToolsSmoothButton [ttk::button $w.hlf.n.f5.main.unaryframe.smoothbutton -text "Smooth" -command { voltool smooth -sigma $MDFFGUI::maptoolssettings::SmoothAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsSmoothButton [ttk::button $w.hlf.n.f5.main.unaryframe.smoothbutton -text "Smooth" -command { voltool smooth -sigma $MDFFGUI::maptoolssettings::SmoothAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   #Pot
   set MapToolsPotLabel [ttk::label $w.hlf.n.f5.main.unaryframe.potlabel -text "MDFF Potential:"]
   set MapToolsPotLabelAmt [ttk::label $w.hlf.n.f5.main.unaryframe.potlabelamt -text "Threshold:"]
   set MapToolsPotEntryAmt [ttk::entry $w.hlf.n.f5.main.unaryframe.potentryamt -textvariable MDFFGUI::maptoolssettings::PotAmt -width 5]
-  set MapToolsPotButton [ttk::button $w.hlf.n.f5.main.unaryframe.potbutton -text "Convert" -command { voltool pot -threshold $MDFFGUI::maptoolssettings::PotAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsPotButton [ttk::button $w.hlf.n.f5.main.unaryframe.potbutton -text "Convert" -command { voltool pot -threshold $MDFFGUI::maptoolssettings::PotAmt -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   #Downsample
   set MapToolsDownsampleLabel [ttk::label $w.hlf.n.f5.main.unaryframe.downsamplelabel -text "Downsample by x2:"]
-  set MapToolsDownsampleButton [ttk::button $w.hlf.n.f5.main.unaryframe.downsamplebutton -text "Downsample" -command { voltool downsample -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsDownsampleButton [ttk::button $w.hlf.n.f5.main.unaryframe.downsamplebutton -text "Downsample" -command { voltool downsample -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   #Supersample
   set MapToolsSupersampleLabel [ttk::label $w.hlf.n.f5.main.unaryframe.supersamplelabel -text "Supersample by x2:"]
-  set MapToolsSupersampleButton [ttk::button $w.hlf.n.f5.main.unaryframe.supersamplebutton -text "Supersample" -command { voltool supersample -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsSupersampleButton [ttk::button $w.hlf.n.f5.main.unaryframe.supersamplebutton -text "Supersample" -command { voltool supersample -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   #Sigma
   set MapToolsSigmaLabel [ttk::label $w.hlf.n.f5.main.unaryframe.sigmalabel -text "Convert to Sigma Scale:"]
-  set MapToolsSigmaButton [ttk::button $w.hlf.n.f5.main.unaryframe.sigmabutton -text "Convert" -command { voltool sigma -mol $MDFFGUI::maptoolssettings::MapToolsMolID } ]
+  set MapToolsSigmaButton [ttk::button $w.hlf.n.f5.main.unaryframe.sigmabutton -text "Convert" -command { voltool sigma -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID } ]
   
   set ShowMapToolsUnary [ttk::label $w.hlf.n.f5.main.showunary -text "$rightPoint Single Map Ops..." -anchor w]
   set HideMapToolsUnary [ttk::label $w.hlf.n.f5.main.unaryframe.hideunary -text "$downPoint Single Map Ops" -anchor w]
@@ -1426,6 +1450,20 @@ proc MDFFGUI::gui::mdffgui {} {
   trace add variable MDFFGUI::maptoolssettings::MapToolsMol2ID write MDFFGUI::gui::set_mapmol2_text
   set MDFFGUI::maptoolssettings::MapToolsMol2ID $nullMolString
   
+  set MapToolsVol2 [ttk::label $w.hlf.n.f5.main.binaryframe.vollabel -text "Vol ID (Density Map):"]
+  set MapToolsVol2MenuButton [ttk::menubutton $w.hlf.n.f5.main.binaryframe.volmenubutton -textvar MDFFGUI::gui::MapToolsVol2MenuText -menu $w.hlf.n.f5.main.binaryframe.volmenubutton.volmenu]
+  set CurrentMapToolsVol2Menu [menu $w.hlf.n.f5.main.binaryframe.volmenubutton.volmenu -tearoff no]
+  
+  #set_vol2_text 
+  fill_mapvol2_menu $CurrentMapToolsVol2Menu
+  #nuclear option trace to capture volume data sets added to an existing molecule.
+  #trace add variable ::vmd_logfile write "MDFFGUI::gui::fill_mapvol2_menu $CurrentMapToolsVol2Menu"
+  trace add variable MDFFGUI::maptoolssettings::MapToolsVol2ID write MDFFGUI::gui::set_mapvol2_text
+  trace add variable MDFFGUI::maptoolssettings::MapToolsMol2ID write "MDFFGUI::gui::fill_mapvol2_menu $CurrentMapToolsVol2Menu"
+  trace add variable MDFFGUI::maptoolssettings::MapToolsMol2ID write MDFFGUI::gui::revert_vol2id
+  
+  set MDFFGUI::maptoolssettings::MapToolsVol2ID $nullVolString
+  
   set MapToolsSelectMap2 [ttk::button $w.hlf.n.f5.main.binaryframe.mapbutton -text "Browse" -command {MDFFGUI::gui::get_map2} ]
   
  #Union or Intersection
@@ -1437,16 +1475,16 @@ proc MDFFGUI::gui::mdffgui {} {
   set MapToolsNoInterp [ttk::radiobutton $w.hlf.n.f5.main.binaryframe.nointerp -variable MDFFGUI::maptoolssettings::InterpolationOrNo -value "-nointerp" -text "No Interpolation"]
   
   #Add
-  set MapToolsAddButton [ttk::button $w.hlf.n.f5.main.binaryframe.addbutton -text "Add Maps" -command { voltool add -mol1 $MDFFGUI::maptoolssettings::MapToolsMolID -mol2 $MDFFGUI::maptoolssettings::MapToolsMol2ID $MDFFGUI::maptoolssettings::UnionOrIntersection $MDFFGUI::maptoolssettings::InterpolationOrNo } ]
+  set MapToolsAddButton [ttk::button $w.hlf.n.f5.main.binaryframe.addbutton -text "Add Maps" -command { voltool add -mol1 $MDFFGUI::maptoolssettings::MapToolsMolID -vol1 $MDFFGUI::maptoolssettings::MapToolsVolID -mol2 $MDFFGUI::maptoolssettings::MapToolsMol2ID -vol2 $MDFFGUI::maptoolssettings::MapToolsVol2ID $MDFFGUI::maptoolssettings::UnionOrIntersection $MDFFGUI::maptoolssettings::InterpolationOrNo } ]
   
   #Diff
-  set MapToolsDiffButton [ttk::button $w.hlf.n.f5.main.binaryframe.diffbutton -text "Subtract Maps" -command { voltool diff -mol1 $MDFFGUI::maptoolssettings::MapToolsMolID -mol2 $MDFFGUI::maptoolssettings::MapToolsMol2ID $MDFFGUI::maptoolssettings::UnionOrIntersection $MDFFGUI::maptoolssettings::InterpolationOrNo } ]
+  set MapToolsDiffButton [ttk::button $w.hlf.n.f5.main.binaryframe.diffbutton -text "Subtract Maps" -command { voltool diff -mol1 $MDFFGUI::maptoolssettings::MapToolsMolID -vol1 $MDFFGUI::maptoolssettings::MapToolsVolID -mol2 $MDFFGUI::maptoolssettings::MapToolsMol2ID -vol2 $MDFFGUI::maptoolssettings::MapToolsVol2ID $MDFFGUI::maptoolssettings::UnionOrIntersection $MDFFGUI::maptoolssettings::InterpolationOrNo } ]
   
   #Mult
-  set MapToolsMultButton [ttk::button $w.hlf.n.f5.main.binaryframe.multbutton -text "Multiply Maps" -command { voltool mult -mol1 $MDFFGUI::maptoolssettings::MapToolsMolID -mol2 $MDFFGUI::maptoolssettings::MapToolsMol2ID $MDFFGUI::maptoolssettings::UnionOrIntersection $MDFFGUI::maptoolssettings::InterpolationOrNo } ]
+  set MapToolsMultButton [ttk::button $w.hlf.n.f5.main.binaryframe.multbutton -text "Multiply Maps" -command { voltool mult -mol1 $MDFFGUI::maptoolssettings::MapToolsMolID -vol1 $MDFFGUI::maptoolssettings::MapToolsVolID -mol2 $MDFFGUI::maptoolssettings::MapToolsMol2ID -vol2 $MDFFGUI::maptoolssettings::MapToolsVol2ID $MDFFGUI::maptoolssettings::UnionOrIntersection $MDFFGUI::maptoolssettings::InterpolationOrNo } ]
   
   #Avg
-  set MapToolsAvgButton [ttk::button $w.hlf.n.f5.main.binaryframe.avgbutton -text "Average Maps" -command { voltool avg -mol1 $MDFFGUI::maptoolssettings::MapToolsMolID -mol2 $MDFFGUI::maptoolssettings::MapToolsMol2ID $MDFFGUI::maptoolssettings::UnionOrIntersection $MDFFGUI::maptoolssettings::InterpolationOrNo } ]
+  set MapToolsAvgButton [ttk::button $w.hlf.n.f5.main.binaryframe.avgbutton -text "Average Maps" -command { voltool avg -mol1 $MDFFGUI::maptoolssettings::MapToolsMolID -vol1 $MDFFGUI::maptoolssettings::MapToolsVolID -mol2 $MDFFGUI::maptoolssettings::MapToolsMol2ID -vol2 $MDFFGUI::maptoolssettings::MapToolsVol2ID $MDFFGUI::maptoolssettings::UnionOrIntersection $MDFFGUI::maptoolssettings::InterpolationOrNo } ]
   
   set ShowMapToolsBinary [ttk::label $w.hlf.n.f5.main.showbinary -text "$rightPoint Multiple Maps Ops..." -anchor w]
   set HideMapToolsBinary [ttk::label $w.hlf.n.f5.main.binaryframe.hidebinary -text "$downPoint Multiple Maps Ops" -anchor w]
@@ -1469,7 +1507,9 @@ proc MDFFGUI::gui::mdffgui {} {
    
   grid $MapToolsMol2 -row 0 -column 0 -sticky nswe
   grid $MapToolsMol2MenuButton -row 0 -column 1 -sticky nswe
-  grid $MapToolsSelectMap2 -row 0 -column 2 -sticky nswe
+  grid $MapToolsVol2 -row 0 -column 2 -sticky nswe
+  grid $MapToolsVol2MenuButton -row 0 -column 3 -sticky nswe
+  grid $MapToolsSelectMap2 -row 0 -column 4 -sticky nswe
   grid $MapToolsIntersection -row 1 -column 0 -sticky nswe 
   grid $MapToolsUnion -row 1 -column 1 -sticky nswe 
   grid $MapToolsInterpolation -row 2 -column 0 -sticky nswe 
@@ -1735,7 +1775,7 @@ proc MDFFGUI::gui::save_density_list {} {
 
 proc MDFFGUI::gui::save_map {} {
   set pathname [tk_getSaveFile -defaultextension ".dx" -filetypes {{dx {.dx}} } -parent $MDFFGUI::gui::w -initialdir $MDFFGUI::settings::CurrentDir]
-  voltool write -mol $MDFFGUI::maptoolssettings::MapToolsMolID -o $pathname
+  voltool write -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID -o $pathname
 }
 
 proc MDFFGUI::gui::save_settings {parent} {
@@ -2705,6 +2745,7 @@ proc MDFFGUI::gui::get_map {} {
     if {$MDFFGUI::maptoolssettings::MapToolsMolID != ""} {mol off $MDFFGUI::maptoolssettings::MapToolsMolID}  
     set mapmol [mol new $pathname] 
     set MDFFGUI::maptoolssettings::MapToolsMolID $mapmol
+    set MDFFGUI::maptoolssettings::MapToolsVolID 0
   }
 }
 
@@ -2714,6 +2755,7 @@ proc MDFFGUI::gui::get_map2 {} {
     if {$MDFFGUI::maptoolssettings::MapToolsMol2ID != ""} {mol off $MDFFGUI::maptoolssettings::MapToolsMol2ID}  
     set mapmol [mol new $pathname] 
     set MDFFGUI::maptoolssettings::MapToolsMol2ID $mapmol
+    set MDFFGUI::maptoolssettings::MapToolsVol2ID 0
   }
 }
 
@@ -2748,6 +2790,24 @@ proc MDFFGUI::gui::set_mapmol_text {args} {
   }
 }
 
+proc MDFFGUI::gui::set_mapvol_text {args} {
+  variable MapToolsVolMenuText
+  if {$MDFFGUI::maptoolssettings::MapToolsVolID == ""} {
+    set MapToolsVolMenuText 0    
+  } else {
+    set MapToolsVolMenuText $MDFFGUI::maptoolssettings::MapToolsVolID    
+  }
+}
+
+proc MDFFGUI::gui::set_mapvol2_text {args} {
+  variable MapToolsVol2MenuText
+  if {$MDFFGUI::maptoolssettings::MapToolsVol2ID == ""} {
+    set MapToolsVol2MenuText 0    
+  } else {
+    set MapToolsVol2MenuText $MDFFGUI::maptoolssettings::MapToolsVol2ID    
+  }
+}
+
 proc MDFFGUI::gui::set_mapmol2_text {args} {
   variable MapToolsMol2MenuText
   if { ! [catch { molinfo $MDFFGUI::maptoolssettings::MapToolsMol2ID get name } name ] } {
@@ -2771,22 +2831,23 @@ proc MDFFGUI::gui::set_mapstructmol_text {args} {
 }
 
 proc MDFFGUI::gui::set_map_stats {args} { 
-  set MDFFGUI::maptoolssettings::MapToolsOrigin [voltool info origin -mol $MDFFGUI::maptoolssettings::MapToolsMolID]    
-  set MDFFGUI::maptoolssettings::MapToolsCOM [voltool com -mol $MDFFGUI::maptoolssettings::MapToolsMolID]    
-  set MDFFGUI::maptoolssettings::MapToolsXsize [voltool info xsize -mol $MDFFGUI::maptoolssettings::MapToolsMolID]    
-  set MDFFGUI::maptoolssettings::MapToolsYsize [voltool info ysize -mol $MDFFGUI::maptoolssettings::MapToolsMolID]    
-  set MDFFGUI::maptoolssettings::MapToolsZsize [voltool info zsize -mol $MDFFGUI::maptoolssettings::MapToolsMolID]    
-  
-  set minmax [voltool info minmax -mol $MDFFGUI::maptoolssettings::MapToolsMolID]    
-  set MDFFGUI::maptoolssettings::MapToolsMin [lindex $minmax 0]    
-  set MDFFGUI::maptoolssettings::MapToolsMax [lindex $minmax 1]    
-  #For clamping command, set defaults to actual range
-  set MDFFGUI::maptoolssettings::ClampMin [lindex $minmax 0]    
-  set MDFFGUI::maptoolssettings::ClampMax [lindex $minmax 1]    
-  #For range command, set defaults to actual range
-  set MDFFGUI::maptoolssettings::RangeMin [lindex $minmax 0]    
-  set MDFFGUI::maptoolssettings::RangeMax [lindex $minmax 1]    
-
+  if {$MDFFGUI::maptoolssettings::MapToolsMolID != "none"} {
+    set MDFFGUI::maptoolssettings::MapToolsOrigin [voltool info origin -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID]    
+    set MDFFGUI::maptoolssettings::MapToolsCOM [voltool com -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID]    
+    set MDFFGUI::maptoolssettings::MapToolsXsize [voltool info xsize -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID]    
+    set MDFFGUI::maptoolssettings::MapToolsYsize [voltool info ysize -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID]    
+    set MDFFGUI::maptoolssettings::MapToolsZsize [voltool info zsize -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID]    
+    
+    set minmax [voltool info minmax -mol $MDFFGUI::maptoolssettings::MapToolsMolID -vol $MDFFGUI::maptoolssettings::MapToolsVolID]    
+    set MDFFGUI::maptoolssettings::MapToolsMin [lindex $minmax 0]    
+    set MDFFGUI::maptoolssettings::MapToolsMax [lindex $minmax 1]    
+    #For clamping command, set defaults to actual range
+    set MDFFGUI::maptoolssettings::ClampMin [lindex $minmax 0]    
+    set MDFFGUI::maptoolssettings::ClampMax [lindex $minmax 1]    
+    #For range command, set defaults to actual range
+    set MDFFGUI::maptoolssettings::RangeMin [lindex $minmax 0]    
+    set MDFFGUI::maptoolssettings::RangeMax [lindex $minmax 1]    
+  }
 }
 
 proc MDFFGUI::gui::fill_mol_menu {args} {
@@ -2833,6 +2894,32 @@ proc MDFFGUI::gui::fill_mapmol_menu {args} {
   }
 }
 
+proc MDFFGUI::gui::fill_mapvol_menu {args} {
+  variable nullVolString
+  set name [lindex $args 0]
+  $name delete 0 end
+  if { $MDFFGUI::maptoolssettings::MapToolsMolID != "none" && [lsearch -exact [molinfo list] $MDFFGUI::maptoolssettings::MapToolsMolID] != -1 } {
+    for {set i 0} {$i < [molinfo $MDFFGUI::maptoolssettings::MapToolsMolID get numvolumedata]} {incr i} {
+      $name add radiobutton -variable MDFFGUI::maptoolssettings::MapToolsVolID \
+      -value $i -label $i \
+    }
+  }
+
+}
+
+proc MDFFGUI::gui::fill_mapvol2_menu {args} {
+  variable nullVolString
+  set name [lindex $args 0]
+  $name delete 0 end
+  
+  if { $MDFFGUI::maptoolssettings::MapToolsMol2ID != "none" && [lsearch -exact [molinfo list] $MDFFGUI::maptoolssettings::MapToolsMol2ID] != -1 } {
+    for {set i 0} {$i < [molinfo $MDFFGUI::maptoolssettings::MapToolsMol2ID get numvolumedata]} {incr i} {
+      $name add radiobutton -variable MDFFGUI::maptoolssettings::MapToolsVol2ID \
+      -value $i -label $i \
+    }
+  }
+}
+
 proc MDFFGUI::gui::fill_mapmol2_menu {args} {
   variable nullMolString
   set name [lindex $args 0]
@@ -2853,6 +2940,14 @@ proc MDFFGUI::gui::fill_mapmol2_menu {args} {
       set MDFFGUI::maptoolssettings::MapToolsMol2ID [molinfo top]
     } else { set MDFFGUI::maptoolssettings::MapToolsMol2ID $nullMolString }
   }
+}
+
+proc MDFFGUI::gui::revert_volid {args} {
+  set MDFFGUI::maptoolssettings::MapToolsVolID 0
+}
+
+proc MDFFGUI::gui::revert_vol2id {args} {
+  set MDFFGUI::maptoolssettings::MapToolsVol2ID 0
 }
 
 proc MDFFGUI::gui::fill_mapstructmol_menu {args} {
@@ -2883,10 +2978,12 @@ proc MDFFGUI::gui::generate_histogram {} {
   if {[info exists HistPlot]} { catch {$HistPlot quit}}
   
   global MAPMOL
+  global MAPVOL
   set MAPMOL $MDFFGUI::maptoolssettings::MapToolsMolID 
+  set MAPVOL $MDFFGUI::maptoolssettings::MapToolsVolID
     
-  set histreturn [voltool hist -nbins $nbins -mol $MAPMOL]
-  set minmax [voltool info minmax -mol $MAPMOL]
+  set histreturn [voltool hist -nbins $nbins -mol $MAPMOL -vol $MAPVOL]
+  set minmax [voltool info minmax -mol $MAPMOL -vol $MAPVOL]
   set min [lindex $minmax 0]
   set max [lindex $minmax 1]
   set xlist [list]
@@ -2922,7 +3019,7 @@ proc MDFFGUI::gui::generate_histogram {} {
     }
   }
 
-  mol modstyle 0 $MAPMOL Isosurface $highhistval 0 0 0 1 1
+  mol modstyle 0 $MAPMOL Isosurface $highhistval $MAPVOL 0 0 1 1
   
   set HistPlot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel $ylabel -nolines -marker square -fill black -xmin [expr [lindex $xlist 0] - (0.5*$delta)] -xmax [expr [lindex $xlist end] + (0.5*$delta)]]
  
@@ -2965,7 +3062,7 @@ proc MDFFGUI::gui::generate_histogram {} {
       set MapToolsPlotX $x
       $HistPlot undraw "line"
       $HistPlot draw line $x $ymin $x $ymax -tag "line"
-      mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
+      mol modstyle 0 $MAPMOL Isosurface $x $MAPVOL 0 0 1 1
     }
   }
   
@@ -2980,7 +3077,7 @@ proc MDFFGUI::gui::generate_histogram {} {
       set MapToolsPlotX $x
       $HistPlot undraw "line"
       $HistPlot draw line $x $ymin $x $ymax -tag "line"
-      mol modstyle 0 $MAPMOL Isosurface $x 0 0 0 1 1
+      mol modstyle 0 $MAPMOL Isosurface $x $MAPVOL 0 0 1 1
     }
   }
 }
