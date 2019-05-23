@@ -419,6 +419,8 @@ proc MDFFGUI::gui::mdffgui {} {
   set LoadFiles [ttk::button $w.hlf.n.f1.main.fileframe.button7 -text "Load PSF/PDB" -command {MDFFGUI::gui::load_struct}]
 
   set CurrentMol [ttk::label $w.hlf.n.f1.main.fileframe.mollabel -text "Mol ID (PDB and PSF):"]
+MDFFGUI::gui::balloon $CurrentMol [MDFFGUI::gui::currentmol]
+
   #set CurrentMolEntry [ttk::entry $w.hlf.n.f1.main.fileframe.molentry -textvariable MDFFGUI::settings::MolID -width 10]
 
   set CurrentMolMenuButton [ttk::menubutton $w.hlf.n.f1.main.fileframe.molmenubutton -textvar MDFFGUI::gui::MolMenuText -menu $w.hlf.n.f1.main.fileframe.molmenubutton.molmenu]
@@ -432,16 +434,22 @@ proc MDFFGUI::gui::mdffgui {} {
 
   
   set CurrentDirLabel [ttk::label $w.hlf.n.f1.main.fileframe.dirlabel -text "Working Directory:"]
+  MDFFGUI::gui::balloon $CurrentDirLabel [MDFFGUI::gui::workingdir]
+
   set CurrentDirEntry [ttk::entry $w.hlf.n.f1.main.fileframe.direntry -textvariable MDFFGUI::settings::CurrentDir -width 40]
   set SelectDir [ttk::button $w.hlf.n.f1.main.fileframe.selectdir -text "Browse" -command "MDFFGUI::gui::get_dir $CurrentDirEntry" ] 
   set CurrentDirSeparator [ttk::separator $w.hlf.n.f1.main.fileframe.cdseperator  -orient horizontal]   
   
   set RestraintFrame [ttk::frame $w.hlf.n.f1.main.fileframe.restraints]
   set RestraintLabel [ttk::label $w.hlf.n.f1.main.fileframe.restraints.label -text "Restraints: "]
+  MDFFGUI::gui::balloon $RestraintLabel [MDFFGUI::gui::restraints]
   #grid columnconfigure $FileFrame 1 -weight 1
   set CButtonSecondary [ttk::checkbutton $w.hlf.n.f1.main.fileframe.restraints.ss -text "Secondary Structure Restraints" -variable MDFFGUI::settings::SSRestraints]
+  MDFFGUI::gui::balloon $CButtonSecondary [MDFFGUI::gui::ssrestraints]
   set CButtonChirality [ttk::checkbutton $w.hlf.n.f1.main.fileframe.restraints.chi -text "Chirality Restraints" -variable MDFFGUI::settings::ChiralityRestraints]
+  MDFFGUI::gui::balloon $CButtonChirality [MDFFGUI::gui::chiralityrestraints]
   set CButtonCispeptide [ttk::checkbutton $w.hlf.n.f1.main.fileframe.restraints.cis -text "Cispeptide Restraints" -variable MDFFGUI::settings::CispeptideRestraints]
+  MDFFGUI::gui::balloon $CButtonCispeptide [MDFFGUI::gui::cispeptiderestraints]
   set GenerateXBonds [ttk::button $w.hlf.n.f1.main.fileframe.xbonds -text "Generate Restraints" -command {MDFFGUI::gui::generate_xbonds} -state disabled]
   set XBondsSeparator [ttk::separator $w.hlf.n.f1.main.fileframe.xbondsseperator  -orient horizontal]   
   
@@ -451,13 +459,16 @@ proc MDFFGUI::gui::mdffgui {} {
   set GridpdbSeparator [ttk::separator $w.hlf.n.f1.main.fileframe.gridpdbseperator  -orient horizontal]   
 
   set FixedpdbLabel [ttk::label $w.hlf.n.f1.main.fileframe.fixedlabel -text "Fixed PDB selection text:"]
+  MDFFGUI::gui::balloon $FixedpdbLabel [MDFFGUI::gui::fixedpdbtext]  
   set FixedpdbInput [ttk::entry $w.hlf.n.f1.main.fileframe.fixedentry -textvariable MDFFGUI::settings::FixedPDBSelText -width 40]
   set FixedColumnLabel [ttk::label $w.hlf.n.f1.main.fileframe.fixedclabel -text "Fixed PDB Column:"]
+  MDFFGUI::gui::balloon $FixedColumnLabel [MDFFGUI::gui::fixedpdbcolumn]  
   set FixedColumnInput [ttk::entry $w.hlf.n.f1.main.fileframe.fixedcentry -textvariable MDFFGUI::settings::FixedColumn -width 40]
   set FixedpdbGen [ttk::button $w.hlf.n.f1.main.fileframe.fixedpdb -text "Generate Fixed PDB" -command {MDFFGUI::gui::make_fixedpdb} -state disabled]
   set FixedpdbSeparator [ttk::separator $w.hlf.n.f1.main.fileframe.fixedpdbseperator  -orient horizontal]   
  
   set ParamListLabel [ttk::label $w.hlf.n.f1.main.fileframe.paramlistlabel -text "Parameter Files: "]
+  MDFFGUI::gui::balloon $ParamListLabel [MDFFGUI::gui::parameters]  
   set ParamListScroll [ttk::scrollbar $w.hlf.n.f1.main.fileframe.paramlistscroll -command "$w.hlf.n.f1.main.fileframe.paramlistbox yview" -orient vertical]
   set ParamListBox [listbox $w.hlf.n.f1.main.fileframe.paramlistbox -height 5 -yscrollcommand "$ParamListScroll set" -listvariable MDFFGUI::settings::ParameterList]
   set ParamListAdd [ttk::button $w.hlf.n.f1.main.fileframe.paramlistadd -text "Add" -command "MDFFGUI::gui::add_paramfile $ParamListBox"]
@@ -466,6 +477,8 @@ proc MDFFGUI::gui::mdffgui {} {
   }]
   
   set CurrentDXFile [ttk::label $w.hlf.n.f1.main.fileframe.dxlabel -text "Density Map:"]
+  MDFFGUI::gui::balloon $CurrentDXFile [MDFFGUI::gui::currentdensitymap]
+  
   set CurrentDXEntry [ttk::entry $w.hlf.n.f1.main.fileframe.dxentry -textvariable MDFFGUI::settings::CurrentDXPath -width 40]
   set SelectDX [ttk::button $w.hlf.n.f1.main.fileframe.dx -text "Browse" -command "MDFFGUI::gui::get_density $CurrentDXEntry" ]
   #set MakeDX [ttk::button $w.hlf.n.f1.main.fileframe.griddx -text "Generate MDFF Potential" -command {MDFFGUI::gui::make_griddx} ]
@@ -490,9 +503,11 @@ proc MDFFGUI::gui::mdffgui {} {
 
   
   set NameLabel [ttk::label $w.hlf.n.f1.main.fileframe.simnamelabel -text "Simulation Output Name:"]
+  MDFFGUI::gui::balloon $NameLabel [MDFFGUI::gui::simoutputname]  
   set NameInput [ttk::entry $w.hlf.n.f1.main.fileframe.entry3 -textvariable MDFFGUI::settings::SimulationName -width 40]
   
   set StepLabel [ttk::label $w.hlf.n.f1.main.fileframe.simsteplabel -text "Simulation Output Step:"]
+  MDFFGUI::gui::balloon $StepLabel [MDFFGUI::gui::simstep]  
   set StepInput [ttk::entry $w.hlf.n.f1.main.fileframe.stepentry -textvariable MDFFGUI::settings::SimulationStep -width 40]
   
   set SetupSeparator [ttk::separator $w.hlf.n.f1.main.setupseperator  -orient horizontal]
@@ -502,7 +517,9 @@ proc MDFFGUI::gui::mdffgui {} {
   set MDFFSetup [ttk::button $w.hlf.n.f1.main.setup -text "Generate NAMD files" -command {MDFFGUI::gui::mdff_setup} -state normal]
  
   set ShowMDFF [ttk::label $w.hlf.n.f1.main.showmdff -text "$rightPoint MDFF Files..." -anchor w]
+  MDFFGUI::gui::balloon $ShowMDFF [MDFFGUI::gui::mdfffiles]  
   set HideMDFF [ttk::label $w.hlf.n.f1.main.fileframe.hidemdff -text "$downPoint MDFF Files" -anchor w]
+  MDFFGUI::gui::balloon $HideMDFF [MDFFGUI::gui::mdfffiles]  
   $FileFrame configure -labelwidget $HideMDFF
   bind $HideMDFF <Button-1> {
       grid remove .mdffgui.hlf.n.f1.main.fileframe
@@ -628,7 +645,9 @@ proc MDFFGUI::gui::mdffgui {} {
   set VAC [ttk::radiobutton $w.hlf.n.f1.main.paramframe.envframe.vac -variable MDFFGUI::settings::PBCorGBIS -value "" -text "Vacuum"]
   
   set ShowParams [ttk::label $w.hlf.n.f1.main.showparams -text "$rightPoint Simulation Parameters..." -anchor w]
+  MDFFGUI::gui::balloon $ShowParams [MDFFGUI::gui::simparams]  
   set HideParams [ttk::label $w.hlf.n.f1.main.paramframe.hideparams -text "$downPoint Simulation Parameters" -anchor w]
+  MDFFGUI::gui::balloon $HideParams [MDFFGUI::gui::simparams]  
   $ParamFrame configure -labelwidget $HideParams
   bind $HideParams <Button-1> {
       grid remove .mdffgui.hlf.n.f1.main.paramframe
@@ -3080,6 +3099,29 @@ proc MDFFGUI::gui::generate_histogram {} {
       mol modstyle 0 $MAPMOL Isosurface $x $MAPVOL 0 0 1 1
     }
   }
+}
+
+proc MDFFGUI::gui::balloon {w help} {
+    bind $w <Any-Enter> "after 2000 [list MDFFGUI::gui::balloon:show %W [list $help]]"
+    bind $w <Any-Leave> "destroy %W.balloon"
+}
+  
+proc MDFFGUI::gui::balloon:show {w arg} {
+    if {[eval winfo containing  [winfo pointerxy .]]!=$w} {return}
+    set top $w.balloon
+    catch {destroy $top}
+    toplevel $top -bd 1 -bg black
+    wm overrideredirect $top 1
+    if {[string equal [tk windowingsystem] aqua]}  {
+        ::tk::unsupported::MacWindowStyle style $top help none
+    }   
+    pack [message $top.txt -aspect 10000 -bg lightyellow \
+            -font fixed -text $arg]
+    set wmx [winfo rootx $w]
+    set wmy [expr [winfo rooty $w]+[winfo height $w]]
+    wm geometry $top \
+      [winfo reqwidth $top.txt]x[winfo reqheight $top.txt]+$wmx+$wmy
+    raise $top
 }
 
 proc mdffgui_tk {} {
