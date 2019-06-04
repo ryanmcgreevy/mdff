@@ -620,29 +620,39 @@ MDFFGUI::gui::balloon $CurrentMol [MDFFGUI::gui::currentmol]
   #grid columnconfigure $w.n.f2.main2 0 -weight 1
   set TempLabel [ttk::label $w.hlf.n.f1.main.paramframe.templabel -text "Temperature (K):"]
   set TempInput [ttk::entry $w.hlf.n.f1.main.paramframe.tempentry -textvariable MDFFGUI::settings::Temperature]
+  MDFFGUI::gui::balloon $TempLabel [MDFFGUI::gui::itemp]  
   
   set FTempLabel [ttk::label $w.hlf.n.f1.main.paramframe.ftemplabel -text "Final Temperature (K):"]
   set FTempInput [ttk::entry $w.hlf.n.f1.main.paramframe.ftempentry -textvariable MDFFGUI::settings::FTemperature]
+  MDFFGUI::gui::balloon $FTempLabel [MDFFGUI::gui::ftemp]  
   
   set MinStepLabel [ttk::label $w.hlf.n.f1.main.paramframe.minsteplabel -text "Minimization Steps:"]
   set MinStepInput [ttk::entry $w.hlf.n.f1.main.paramframe.minstepentry -textvariable MDFFGUI::settings::Minsteps]
+  MDFFGUI::gui::balloon $MinStepLabel [MDFFGUI::gui::minsteps]  
   
   set NumStepLabel [ttk::label $w.hlf.n.f1.main.paramframe.numsteplabel -text "Time steps:"]
   set NumStepInput [ttk::entry $w.hlf.n.f1.main.paramframe.numstepentry -textvariable MDFFGUI::settings::Numsteps]
+  MDFFGUI::gui::balloon $NumStepLabel [MDFFGUI::gui::numsteps]  
  
   #set GScaleLabel [ttk::label $w.hlf.n.f1.main.paramframe.gscalelabel -text "Grid Scaling Factor:"]
   #set GScaleInput [ttk::entry $w.hlf.n.f1.main.paramframe.gscaleentry -textvariable MDFFGUI::settings::GScale]
 
   set CButtonLite [ttk::checkbutton $w.hlf.n.f1.main.paramframe.gridforcelite -text "gridforcelite" -variable MDFFGUI::settings::GridforceLite]
+  MDFFGUI::gui::balloon $CButtonLite [MDFFGUI::gui::gridforcelite]  
 
   set CButtonGridOff [ttk::checkbutton $w.hlf.n.f1.main.paramframe.gridoff -text "Turn off grid forces" -variable MDFFGUI::settings::GridOff]
+  MDFFGUI::gui::balloon $CButtonGridOff [MDFFGUI::gui::gridforceoff]  
   
   set EnvironFrame [ttk::frame $w.hlf.n.f1.main.paramframe.envframe]
   set EnvironLabel [ttk::label $w.hlf.n.f1.main.paramframe.envframe.label -text "System Environment: "]
   set PBC [ttk::radiobutton $w.hlf.n.f1.main.paramframe.envframe.pbc -variable MDFFGUI::settings::PBCorGBIS -value "-pbc" -text "Periodic Boundary Conditions"]
+  MDFFGUI::gui::balloon $PBC [MDFFGUI::gui::pbc]  
+  
   set GBIS [ttk::radiobutton $w.hlf.n.f1.main.paramframe.envframe.gbis -variable MDFFGUI::settings::PBCorGBIS -value "-gbis" -text "Implicit Solvent"]
+  MDFFGUI::gui::balloon $GBIS [MDFFGUI::gui::gbis]  
   
   set VAC [ttk::radiobutton $w.hlf.n.f1.main.paramframe.envframe.vac -variable MDFFGUI::settings::PBCorGBIS -value "" -text "Vacuum"]
+  MDFFGUI::gui::balloon $VAC [MDFFGUI::gui::vac]  
   
   set ShowParams [ttk::label $w.hlf.n.f1.main.showparams -text "$rightPoint Simulation Parameters..." -anchor w]
   MDFFGUI::gui::balloon $ShowParams [MDFFGUI::gui::simparams]  
@@ -699,8 +709,10 @@ MDFFGUI::gui::balloon $CurrentMol [MDFFGUI::gui::currentmol]
   grid columnconfigure $xMDFFFrame 1 -weight 1
   
   set CButtonxMDFF [ttk::checkbutton $w.hlf.n.f1.main.xmdffframe.xmdff -text "xMDFF" -variable MDFFGUI::settings::xMDFF -command {MDFFGUI::gui::xmdff_toggle}]
+  MDFFGUI::gui::balloon $CButtonxMDFF [MDFFGUI::gui::doxmdff]  
   
   set xMDFFDensityLabel [ttk::label $w.hlf.n.f1.main.xmdffframe.denlabel -text "xMDFF Density File:"] 
+  MDFFGUI::gui::balloon $xMDFFDensityLabel [MDFFGUI::gui::xmdffdensity]  
   set xMDFFDensityViewScroll [ttk::scrollbar $w.hlf.n.f1.main.xmdffframe.denviewscroll -command "$w.hlf.n.f1.main.xmdffframe.denview yview" -orient vertical]
   set xMDFFDensityViewScrollX [ttk::scrollbar $w.hlf.n.f1.main.xmdffframe.denviewscrollx -command "$w.hlf.n.f1.main.xmdffframe.denview xview" -orient horizontal]
   set xMDFFDensityView [ttk::treeview $w.hlf.n.f1.main.xmdffframe.denview -selectmode browse -yscrollcommand "$xMDFFDensityViewScroll set" -xscrollcommand "$xMDFFDensityViewScrollX set"]
@@ -733,18 +745,22 @@ MDFFGUI::gui::balloon $CurrentMol [MDFFGUI::gui::currentmol]
   set GetRefs [ttk::button $w.hlf.n.f1.main.xmdffframe.getrefs -text "Browse" -command {MDFFGUI::gui::get_refs} -state disabled ]
   
   set xMDFFSelLabel [ttk::label $w.hlf.n.f1.main.xmdffframe.xmdffsellabel -text "Refinement Selection:"]
+  MDFFGUI::gui::balloon $xMDFFSelLabel [MDFFGUI::gui::xmdffsel]  
   set xMDFFSelInput [ttk::entry $w.hlf.n.f1.main.xmdffframe.xmdffselentry -textvariable MDFFGUI::settings::xMDFFSel -width 40 -state disabled]
   
   set RefStepsLabel [ttk::label $w.hlf.n.f1.main.xmdffframe.refstepslabel -text "Refinement Steps:"]
+  MDFFGUI::gui::balloon $RefStepsLabel [MDFFGUI::gui::xmdffsteps]  
   set RefStepsInput [ttk::entry $w.hlf.n.f1.main.xmdffframe.refstepsentry -textvariable MDFFGUI::settings::RefSteps -width 40 -state disabled]
   
   set CurrentCrystPDB [ttk::label $w.hlf.n.f1.main.xmdffframe.crystpdb -text "Symmetry PDB (optional):"] 
+  MDFFGUI::gui::balloon $CurrentCrystPDB [MDFFGUI::gui::xmdffsymmetry]  
   set CurrentCrystEntry [ttk::entry $w.hlf.n.f1.main.xmdffframe.crystentry -textvariable MDFFGUI::settings::CurrentCrystPath -width 40 -state disabled]
   set GetCryst [ttk::button $w.hlf.n.f1.main.xmdffframe.getcrystpdb -text "Browse" -command "MDFFGUI::gui::get_cryst $CurrentCrystEntry" -state disabled ]
   
 #  set CButtonMask [ttk::checkbutton $w.hlf.n.f1.main.xmdffframe.mask -text "Mask Density" -variable MDFFGUI::settings::Mask -state disabled -command {MDFFGUI::gui::mask_toggle}]
   
   set CButtonBFS [ttk::checkbutton $w.hlf.n.f1.main.xmdffframe.bfs -text "Calculate Beta Factors" -variable MDFFGUI::settings::BFS -state disabled]
+  MDFFGUI::gui::balloon $CButtonBFS [MDFFGUI::gui::xmdffbf]  
 
 #  set MaskResLabel [ttk::label $w.hlf.n.f1.main.xmdffframe.maskreslabel -text "Mask Resolution (A):"]
 #  set MaskResInput [ttk::entry $w.hlf.n.f1.main.xmdffframe.maskresentry -textvariable MDFFGUI::settings::MaskRes -width 40 -state disabled]
@@ -753,7 +769,9 @@ MDFFGUI::gui::balloon $CurrentMol [MDFFGUI::gui::currentmol]
 #  set MaskCutoffInput [ttk::entry $w.hlf.n.f1.main.xmdffframe.maskcutoffentry -textvariable MDFFGUI::settings::MaskCutoff -width 40 -state disabled]
   
   set ShowxMDFF [ttk::label $w.hlf.n.f1.main.showxmdff -text "$rightPoint xMDFF..." -anchor w]
+  MDFFGUI::gui::balloon $ShowxMDFF [MDFFGUI::gui::xmdff]  
   set HidexMDFF [ttk::label $w.hlf.n.f1.main.xmdffframe.hidexmdff -text "$downPoint xMDFF" -anchor w]
+  MDFFGUI::gui::balloon $HidexMDFF [MDFFGUI::gui::xmdff]  
   $xMDFFFrame configure -labelwidget $HidexMDFF
   bind $HidexMDFF <Button-1> {
       grid remove .mdffgui.hlf.n.f1.main.xmdffframe
@@ -809,22 +827,28 @@ MDFFGUI::gui::balloon $CurrentMol [MDFFGUI::gui::currentmol]
   grid columnconfigure $IMDFrame 1 -weight 1
   
   set CButtonIMD [ttk::checkbutton $w.hlf.n.f1.main.imdframe.imdff -text "IMD" -variable MDFFGUI::settings::IMD -command {MDFFGUI::gui::imd_toggle}]
+  MDFFGUI::gui::balloon $CButtonIMD [MDFFGUI::gui::doimd]  
   
   #set IMDSelectionLabel [ttk::label $w.hlf.n.f1.main.fileframe.imdsellabel -text "IMD selection text:"]
   #set IMDSelectionInput [ttk::entry $w.hlf.n.f1.main.fileframe.imdselentry -textvariable MDFFGUI::settings::IMDSelText -width 40]
 
   set IMDPortLabel [ttk::label $w.hlf.n.f1.main.imdframe.imdportlabel -text "IMD Port:"]
+  MDFFGUI::gui::balloon $IMDPortLabel [MDFFGUI::gui::imdport]  
   set IMDPortInput [ttk::entry $w.hlf.n.f1.main.imdframe.imdportentry -textvariable MDFFGUI::settings::IMDPort -state disabled]
   
   set IMDFreqLabel [ttk::label $w.hlf.n.f1.main.imdframe.imdfreqlabel -text "IMD Frequency:"]
+  MDFFGUI::gui::balloon $IMDFreqLabel [MDFFGUI::gui::imdfreq]  
   set IMDFreqInput [ttk::entry $w.hlf.n.f1.main.imdframe.imdfreqentry -textvariable MDFFGUI::settings::IMDFreq -state disabled]
   
   set IMDKeepLabel [ttk::label $w.hlf.n.f1.main.imdframe.imdkeeplabel -text "IMD Keep Frames:"]
+  MDFFGUI::gui::balloon $IMDKeepLabel [MDFFGUI::gui::imdkeep]  
   set IMDKeepInput [ttk::entry $w.hlf.n.f1.main.imdframe.imdkeepentry -textvariable MDFFGUI::settings::IMDKeep -state disabled]
   
   set CButtonIMDWait [ttk::checkbutton $w.hlf.n.f1.main.imdframe.imdffwait -text "Wait for IMD Connection" -variable MDFFGUI::settings::IMDWait -state disabled]
+  MDFFGUI::gui::balloon $CButtonIMDWait [MDFFGUI::gui::imdwait]  
   
   set CButtonIMDIgnore [ttk::checkbutton $w.hlf.n.f1.main.imdframe.imdffignore -text "Ignore IMD forces" -variable MDFFGUI::settings::IMDIgnore -state disabled]
+  MDFFGUI::gui::balloon $CButtonIMDIgnore [MDFFGUI::gui::imdignore]  
 
 
   #set IMDInputSwitch [radiobutton $w.hlf.n.f4.main.imdradioinput -variable IMDInpOrList -value "input" -text "Input IMD Hostname" -command {MDFFGUI:select_imd_host}]
@@ -833,16 +857,20 @@ MDFFGUI::gui::balloon $CurrentMol [MDFFGUI::gui::currentmol]
   #set IMDHostLabel [label $w.hlf.n.f4.main.imdhostlabel -text "OR"]
  # set IMDListSwitch [radiobutton $w.hlf.n.f4.main.imdradiolist -variable IMDInpOrList -value "list" -text "IMD Host from List" -command {MDFFGUI:select_imd_host}]
   set IMDHostLabel [ttk::label $w.hlf.n.f1.main.imdframe.imdhostlabel -text "IMD Server:"]
+  MDFFGUI::gui::balloon $IMDHostLabel [MDFFGUI::gui::imdhost]  
   set IMDServer [ttk::combobox $w.hlf.n.f1.main.imdframe.imdserver -textvariable MDFFGUI::gui::CurrentServer -values $MDFFGUI::gui::ServerList -state disabled]
 
   set IMDProcLabel [ttk::label $w.hlf.n.f1.main.imdframe.imdproclabel -text "Processors:"]
+  MDFFGUI::gui::balloon $IMDProcLabel [MDFFGUI::gui::imdproc]  
   set IMDProcInput [ttk::entry $w.hlf.n.f1.main.imdframe.imdprocentry -textvariable MDFFGUI::settings::IMDProcs -state disabled]
  
    
   bind $IMDServer <<ComboboxSelected>> {MDFFGUI::gui::imd_server}
   
   set ShowIMD [ttk::label $w.hlf.n.f1.main.showimd -text "$rightPoint IMD Parameters..." -anchor w]
+  MDFFGUI::gui::balloon $ShowIMD [MDFFGUI::gui::imd]  
   set HideIMD [ttk::label $w.hlf.n.f1.main.imdframe.hideimd -text "$downPoint IMD Parameters" -anchor w]
+  MDFFGUI::gui::balloon $HideIMD [MDFFGUI::gui::imd]  
   $IMDFrame configure -labelwidget $HideIMD
   bind $HideIMD <Button-1> {
       grid remove .mdffgui.hlf.n.f1.main.imdframe
