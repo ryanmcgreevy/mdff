@@ -15,4 +15,4 @@ package ifneeded mdff_map 0.2 [list source [file join $dir mdff_map.tcl]]
 package ifneeded mdff_setup 0.4 "set env(MDFFDIR) [list $dir]; [list source [file join $dir mdff_setup.tcl]]"
 package ifneeded mdff_sim 0.2 [list source [file join $dir mdff_sim.tcl]]
 package ifneeded mdff_tmp 0.2 [list source [file join $dir mdff_tmp.tcl]]
-package ifneeded mdff_gui 0.2 "set env(MDFFDIR) [list $dir]; [list source [file join $dir mdff_gui.tcl]]; [list source [file join $dir mdffgui_balloon.tcl]]"
+package ifneeded mdff_gui 0.2 "set env(MDFFDIR) [list $dir]; [list source [file join $dir mdff_gui.tcl]]; [list source [file join $dir mdffgui_balloon.tcl]]; [list source [file join $dir mdffgui_infobutton.tcl]]"

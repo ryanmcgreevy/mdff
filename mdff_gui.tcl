@@ -2,6 +2,7 @@ package require mdff
 package require ssrestraints
 package require namdrun
 package require tktooltip
+package require infobutton
 
 package provide mdff_gui 0.2
 namespace eval MDFFGUI:: {
@@ -479,6 +480,12 @@ proc MDFFGUI::gui::mdffgui {} {
   
   set CurrentDXFile [ttk::label $w.hlf.n.f1.main.fileframe.dxlabel -text "Density Map:"]
   ::TKTOOLTIP::balloon $CurrentDXFile [MDFFGUI::gui::currentdensitymap]
+  set densityinfo [INFOBUTTON::createInfoButton $FileFrame 7 4]
+  bind $densityinfo <Button-1> {
+     set val [MDFFGUI::gui::densitymapinfo]
+     INFOBUTTON::infoWindow densitymapinfo [lindex $val 0] [lindex $val 1] [lindex $val 2]
+  }
+
   
   set CurrentDXEntry [ttk::entry $w.hlf.n.f1.main.fileframe.dxentry -textvariable MDFFGUI::settings::CurrentDXPath -width 40]
   set SelectDX [ttk::button $w.hlf.n.f1.main.fileframe.dx -text "Browse" -command "MDFFGUI::gui::get_density $CurrentDXEntry" ]
