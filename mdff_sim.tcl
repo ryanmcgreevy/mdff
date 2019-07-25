@@ -39,7 +39,7 @@ proc ::MDFF::Sim::mdff_sim_usage { } {
   puts "Options:"
   puts "  -res <target resolution in Angstroms> (default: $defaultTargetResolution)"
   puts "  -spacing <grid spacing in Angstroms> (default based on res)"
-  puts "  -allframes (average over all frames)"
+#  puts "  -allframes (average over all frames)"
 
 }
 
