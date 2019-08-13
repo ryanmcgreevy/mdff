@@ -2217,10 +2217,15 @@ proc MDFFGUI::gui::mdff_setup {} {
       MDFFGUI::gui::make_gridpdb $maps $seltext
       lappend gridpdbs "gridpdb$maps.pdb"
       if {$MDFFGUI::settings::REMDFF && $MDFFGUI::settings::REMDFFAutoBlur} {
-        #Note could increase starting smoothness, say $i + 3, but would have
-        #to begin set i 1 and have an out of for loop griddx for 0.dx
-        #so that 0.dx is still the unblurred one.
-        for {set i 0} {$i < $MDFFGUI::settings::REMDFFNumReplicas} {incr i} {
+        # 0.dx is the original map with no smoothing, so do this outside the loop first
+        set replicadxfile [file join $MDFFGUI::settings::CurrentDir "0.dx"]
+        file delete -force $replicadxfile
+        #don't use make_griddx since we aren't following the usual naming convention in the case of replicas
+        mdff griddx -i $file -o $replicadxfile
+        lappend potentials "0.dx"
+        #for now each subsequent blur is only incremented by 1 sigma, but could
+        #introduce other stepping later.
+        for {set i 1} {$i < $MDFFGUI::settings::REMDFFNumReplicas} {incr i} {
           set replicadxfile [file join $MDFFGUI::settings::CurrentDir "$i.dx"]
           file delete -force $replicadxfile
           voltool smooth -sigma $i -i $file -o $replicadxfile
