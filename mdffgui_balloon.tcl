@@ -32,7 +32,7 @@ proc MDFFGUI::gui::restraints {} {
   return "Automatically generate optional simulation restraints to prevent overfitting."
 }
 
-proc MDFFGUI::gui::ssrestraints {} {
+proc MDFFGUI::gui::ssrestraintstip {} {
   return "Restrain dihedral angles in secondary structures of protein as well as dihedral angles and base pairs in nucleic acids."
 }
 

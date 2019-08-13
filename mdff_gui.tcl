@@ -446,7 +446,7 @@ proc MDFFGUI::gui::mdffgui {} {
   ::TKTOOLTIP::balloon $RestraintLabel [MDFFGUI::gui::restraints]
   #grid columnconfigure $FileFrame 1 -weight 1
   set CButtonSecondary [ttk::checkbutton $w.hlf.n.f1.main.fileframe.restraints.ss -text "Secondary Structure Restraints" -variable MDFFGUI::settings::SSRestraints]
-  ::TKTOOLTIP::balloon $CButtonSecondary [MDFFGUI::gui::ssrestraints]
+  ::TKTOOLTIP::balloon $CButtonSecondary [MDFFGUI::gui::ssrestraintstip]
   set CButtonChirality [ttk::checkbutton $w.hlf.n.f1.main.fileframe.restraints.chi -text "Chirality Restraints" -variable MDFFGUI::settings::ChiralityRestraints]
   ::TKTOOLTIP::balloon $CButtonChirality [MDFFGUI::gui::chiralityrestraints]
   set CButtonCispeptide [ttk::checkbutton $w.hlf.n.f1.main.fileframe.restraints.cis -text "Cispeptide Restraints" -variable MDFFGUI::settings::CispeptideRestraints]
